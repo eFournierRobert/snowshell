@@ -1,0 +1,1 @@
+/usr/bin/cc -Wl,--dependency-file=CMakeFiles/snowshell.dir/link.d CMakeFiles/snowshell.dir/main.c.o -o snowshell

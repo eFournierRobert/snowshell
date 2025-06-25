@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/elliott/Documents/snowshell/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
