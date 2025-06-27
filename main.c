@@ -12,17 +12,12 @@ void execute_app(char **);
 
 int main(int argc, char *argv[]) {
     char *cursor = "-> ";
-    bool debug = false;
 
-    if (argc > 1 && strcmp(argv[1], "--debug") == 0)
-        debug = true;
-    
     for(;;){
         printf("%s ", cursor);
-        char input[MAX_INPUT];        
-        if (fgets(input, sizeof(input), stdin)) {
+        char input[MAX_INPUT];
+        if (fgets(input, sizeof(input), stdin)) 
             input_parser(input);
-        }
     }
  
     return 0;
@@ -43,11 +38,13 @@ void input_parser(char *input) {
             tempargs[i++] = token;
         }
 
-        char *args[i];
-        for (int j = 0; j < i; j++)
-            strcpy(args[j], tempargs[j]);
+        char *args[i+1];
+        for (int j = 0; j < i; j++) 
+            args[j] = tempargs[j];
+        args[i] = NULL;
 
         execute_app(args);
+        input = NULL;
     }
 }
 
@@ -59,6 +56,9 @@ void execute_app(char *args[]) {
         exit(EXIT_FAILURE);
     } else if (pid == 0) {
         execvp(args[0], args);
+
+        // Child was continuing to run and not stopping after execvp for some reason
+        exit(EXIT_SUCCESS);
     } else
         wait(NULL);
 }
