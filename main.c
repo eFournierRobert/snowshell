@@ -9,7 +9,6 @@
 
 void input_parser(char *);
 void execute_app(char **);
-char *rmv_newline(char *);
 
 int main(int argc, char *argv[]) {
     char *cursor = "-> ";
@@ -35,16 +34,20 @@ void input_parser(char *input) {
         exit(0);
     } else {
         char *token = strtok(input, " ");
-        char *args[MAX_INPUT];
+        char *tempargs[MAX_INPUT];
         int i = 0;
-        input = rmv_newline(input);
 
-        for (; token != NULL; token = strtok(NULL, " ")) 
-            args[i++] = token;
+        for (; token != NULL; token = strtok(NULL, " ")) { 
+            if (token[strlen(token) - 1] == '\n')
+                token[strlen(token) - 1] = '\0';
+            tempargs[i++] = token;
+        }
+
+        char *args[i];
+        for (int j = 0; j < i; j++)
+            strcpy(args[j], tempargs[j]);
 
         execute_app(args);
-        free(input);
-        input = NULL;
     }
 }
 
@@ -58,17 +61,4 @@ void execute_app(char *args[]) {
         execvp(args[0], args);
     } else
         wait(NULL);
-}
-
-char *rmv_newline(char *input) {
-    for (int i = 0; input[i] == '\0'; i++) {
-        if (input[i] == '\n') 
-            input[i] = '\0';
-    }
-
-    char *pnewinput = calloc(MAX_INPUT, sizeof(char));
-    if (pnewinput == NULL) 
-        exit(EXIT_FAILURE);
-     
-    return pnewinput;
 }
