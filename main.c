@@ -41,7 +41,7 @@ void input_parser(char *input) {
         char *args[i+1];
         for (int j = 0; j < i; j++) 
             args[j] = tempargs[j];
-        args[i] = NULL;
+        args[i] = NULL; // NULL terminating for execvp
 
         execute_app(args);
         input = NULL;
