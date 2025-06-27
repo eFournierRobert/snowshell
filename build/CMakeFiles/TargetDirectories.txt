@@ -1,3 +1,0 @@
-/home/elliott/Documents/snowshell/build/CMakeFiles/snowshell.dir
-/home/elliott/Documents/snowshell/build/CMakeFiles/edit_cache.dir
-/home/elliott/Documents/snowshell/build/CMakeFiles/rebuild_cache.dir
