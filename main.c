@@ -1,4 +1,5 @@
 #include <linux/limits.h>
+#include <stddef.h>
 #include <sys/wait.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -9,12 +10,21 @@
 
 void input_parser(char *);
 void execute_app(char **);
+void greet_user();
 
 int main(int argc, char *argv[]) {
     char *cursor = "-> ";
+    char current_dir[PATH_MAX];
+
+    if (getcwd(current_dir, sizeof(current_dir)) == NULL) {
+        perror("Couldn't get current directory");
+        return 1;
+    }
+
+    greet_user();
 
     for(;;){
-        printf("%s ", cursor);
+        printf("[ %s ]%s ", current_dir, cursor);
         char input[MAX_INPUT];
         if (fgets(input, sizeof(input), stdin)) 
             input_parser(input);
@@ -61,4 +71,10 @@ void execute_app(char *args[]) {
         exit(EXIT_SUCCESS);
     } else
         wait(NULL);
+}
+
+void greet_user() {
+    char *username;
+    username = getlogin();
+    printf("Hi, %s\n\n", username);
 }
