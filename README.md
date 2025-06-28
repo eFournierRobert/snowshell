@@ -5,7 +5,7 @@ Small and simple shell made in C.
 ## Roadmap
 
 - [x] Working program execution
-- [ ] Directory navigation
+- [x] Directory navigation
 - [ ] Commands history
 - [ ] Piping
 - [ ] Configuration
