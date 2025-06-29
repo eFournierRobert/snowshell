@@ -90,11 +90,12 @@ void change_dir(char *args[], char *current_dir) {
         success = chdir(args[1]);
     } else {
         success = chdir(
-            strcat(strcat(
-                current_dir,
-                "/"
-            ), 
-            args[1]
+            strcat(
+                strcat(
+                    current_dir,
+                    "/"
+                ), 
+                args[1]
             )
         );
     }
