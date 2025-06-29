@@ -1,21 +1,18 @@
 #include <errno.h>
 #include <linux/limits.h>
-#include <stddef.h>
 #include <sys/wait.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
+
+#include "dir.h"
 
 void input_parser(char *, char *);
 void execute_app(char **);
 void greet_user();
-void change_dir(char **, char *);
-void goto_home_dir();
 
-int main(int argc, char *argv[]) {
+int main() {
     char *cursor = "-> ";
     char current_dir[PATH_MAX];
 
@@ -83,41 +80,7 @@ void execute_app(char *args[]) {
         wait(NULL);
 }
 
-void change_dir(char *args[], char *current_dir) {
-    int success;
-
-    if (args[1][0] == '/') {
-        success = chdir(args[1]);
-    } else {
-        success = chdir(
-            strcat(
-                strcat(
-                    current_dir,
-                    "/"
-                ), 
-                args[1]
-            )
-        );
-    }
-
-    if (success < 0) {
-        switch (errno) {
-            case ENOENT:
-                printf("Directory %s does not exist\n", args[1]);
-                break;
-            case ENOTDIR:
-                printf("%s is not a directory\n", args[1]);
-                break;
-        }
-    }
-}
-
-void goto_home_dir() {
-    chdir(getenv("HOME"));
-}
-
 void greet_user() {
-    char *username;
-    username = getlogin();
+    char *username = getlogin();
     printf("Hi, %s\n\n", username);
 }

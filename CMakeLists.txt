@@ -4,4 +4,5 @@ project(snowshell C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_BUILD_TYPE Debug)
 
-add_executable(snowshell main.c)
+add_executable(snowshell main.c
+        dir.c)
