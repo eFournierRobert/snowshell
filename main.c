@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <linux/limits.h>
 #include <sys/wait.h>
 #include <stdio.h>
