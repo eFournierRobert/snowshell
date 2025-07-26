@@ -5,16 +5,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "history.h"
 #include "dir.h"
 
 void input_parser(char *, char *);
 void execute_app(char **);
 void greet_user();
+void quit(char **);
 
 int main() {
+    char *hist[500];
     char *cursor = "-> ";
     char current_dir[PATH_MAX];
 
+    get_commands_history(hist);
     greet_user();
 
     for(;;){
@@ -25,42 +29,41 @@ int main() {
 
         printf("[ %s ]%s ", current_dir, cursor);
         char input[MAX_INPUT];
-        if (fgets(input, sizeof(input), stdin)) 
-            input_parser(input, current_dir);
+        if (fgets(input, sizeof(input), stdin)) {
+            if (strcmp(input, "exit\n") == 0)
+                break;
+            else
+                input_parser(input, current_dir);
+        }
     }
- 
-    return 0;
+
+    quit(hist);
 }
 
 void input_parser(char *input, char *current_dir) {
-    if (strcmp(input, "exit\n") == 0) {
-        printf("Bye bye! :)\n");
-        exit(0);
+    char *token = strtok(input, " ");
+    char *tempargs[MAX_INPUT];
+    int i = 0;
+
+    for (; token != NULL; token = strtok(NULL, " ")) { 
+        if (token[strlen(token) - 1] == '\n')
+            token[strlen(token) - 1] = '\0';
+        tempargs[i++] = token;
+    }
+
+    if (strcmp(tempargs[0], "cd") == 0) {
+        if (i < 2 || tempargs[1][0] == '~')
+            goto_home_dir();
+        else
+            change_dir(tempargs, current_dir);
     } else {
-        char *token = strtok(input, " ");
-        char *tempargs[MAX_INPUT];
-        int i = 0;
+        char *args[i+1];
+        for (int j = 0; j < i; j++) 
+            args[j] = tempargs[j];
+        args[i] = NULL; // NULL terminating for execvp
 
-        for (; token != NULL; token = strtok(NULL, " ")) { 
-            if (token[strlen(token) - 1] == '\n')
-                token[strlen(token) - 1] = '\0';
-            tempargs[i++] = token;
-        }
-
-        if (strcmp(tempargs[0], "cd") == 0) {
-            if (i < 2 || tempargs[1][0] == '~')
-                goto_home_dir();
-            else
-                change_dir(tempargs, current_dir);
-        } else {
-            char *args[i+1];
-            for (int j = 0; j < i; j++) 
-                args[j] = tempargs[j];
-            args[i] = NULL; // NULL terminating for execvp
-
-            execute_app(args);
-            input = NULL;
-        }
+        execute_app(args);
+        input = NULL;
     }
 }
 
@@ -82,4 +85,9 @@ void execute_app(char *args[]) {
 void greet_user() {
     char *username = getlogin();
     printf("Hi, %s\n\n", username);
+}
+
+void quit(char **hist) {
+    printf("Bye bye! :)\n");
+    exit(0);
 }
