@@ -18,7 +18,6 @@ void get_commands_history(char **hist) {
         hist[i] = line;
     
     fclose(fptr);
-    fptr = NULL;
 }
 
 FILE *get_hist_file_readptr() {
