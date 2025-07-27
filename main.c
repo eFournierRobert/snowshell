@@ -32,8 +32,8 @@ int main() {
 
         printf("[ %s ]%s ", current_dir, cursor);
         char input[MAX_INPUT];
-        int res = snowshell_fgets(input);
-        if (res == 0) {
+        int ret = snowshell_fgets(input);
+        if (ret == 0) {
             if (strcmp(input, "exit\n") == 0)
                 break;
             else
