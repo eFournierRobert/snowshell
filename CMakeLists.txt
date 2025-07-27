@@ -8,4 +8,5 @@ add_executable(snowshell
         main.c
         dir.c
         history.c
+        inputs.c
 )

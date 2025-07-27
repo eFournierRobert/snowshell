@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "history.h"
+#include "inputs.h"
 #include "dir.h"
 
 void input_parser(char *, char *);
@@ -31,12 +32,14 @@ int main() {
 
         printf("[ %s ]%s ", current_dir, cursor);
         char input[MAX_INPUT];
-        if (fgets(input, sizeof(input), stdin)) {
+        int res = snowshell_fgets(input);
+        if (res == 0) {
             if (strcmp(input, "exit\n") == 0)
                 break;
             else
                 input_parser(input, current_dir);
-        }
+        } else if (res == 1)
+            continue;
     }
 
     quit(hist);
