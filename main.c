@@ -38,7 +38,7 @@ int main() {
                 break;
             else
                 input_parser(input, current_dir);
-        } else if (res == 1)
+        } else if (ret == 1)
             continue;
     }
 
