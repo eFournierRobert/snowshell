@@ -1,3 +1,5 @@
+#include <asm-generic/errno-base.h>
+#include <errno.h>
 #include <linux/limits.h>
 #include <sys/wait.h>
 #include <stdio.h>
@@ -74,7 +76,9 @@ void execute_app(char *args[]) {
         perror("Couldn't create fork");
         exit(EXIT_FAILURE);
     } else if (pid == 0) {
-        execvp(args[0], args);
+        if (execvp(args[0], args) == -1 && errno == ENOENT) {
+            printf("Snowshell: command not found: %s\n", args[0]);
+        }
 
         // Child was continuing to run and not stopping after execvp for some reason
         exit(EXIT_SUCCESS);
