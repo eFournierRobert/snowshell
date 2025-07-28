@@ -26,6 +26,34 @@ void enable_raw_mode() {
 char getch() {
     enable_raw_mode();
     char c = getchar();
+     if (c == '\x1b') { // ESC
+        char seq1 = getchar();
+        char seq2 = getchar();
+
+        if (seq1 == '[') {
+            switch (seq2) {
+                case 'A': 
+                    c = UP; 
+                    break; // Up
+                case 'B': 
+                    c = DOWN; 
+                    break; // Down 
+                case 'C': 
+                    c = RIGHT; 
+                    break; // Right 
+                case 'D': 
+                    c = LEFT; 
+                    break; // Left
+            }
+        }
+        // If not an arrow key, just return ESC
+    } else if (c == 13) {
+        c = ENTER_KEY;
+    } else if (c == 127) {
+        c = BACKSPACE;
+    } else if (c == 3) {
+        c = CTRL_C;
+    }
     disable_raw_mode();
     return c;
 }
@@ -52,6 +80,18 @@ int snowshell_fgets(char *input) {
                 input[i - 1] = '\0';
                 printf("\b \b");
                 i -= 2;
+                break;
+            case UP:
+                printf("up arrow");
+                break;
+            case DOWN:
+                printf("down");
+                break;
+            case LEFT:
+                printf("left");
+                break;
+            case RIGHT:
+                printf("right");
                 break;
             default:
                 input[i] = c;
