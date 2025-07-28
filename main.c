@@ -36,7 +36,7 @@ int main() {
         if (ret == 0) {
             if (strcmp(input, "exit\n") == 0)
                 break;
-            else
+            else if (input[0] != '\n')
                 input_parser(input, current_dir);
         } else if (ret == 1)
             continue;

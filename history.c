@@ -9,9 +9,9 @@
 FILE *get_hist_file_readptr();
 
 void get_commands_history(char **hist) {
-    char line[26];
+    char line[MAX_INPUT];
     ssize_t read;
-    size_t line_len = 26;
+    size_t line_len = MAX_INPUT;
     FILE *fptr = get_hist_file_readptr();
 
     for (int i = 0; fgets(line, line_len, fptr); i++)
