@@ -14,14 +14,18 @@
 void input_parser(char *, char *);
 void execute_app(char **);
 void greet_user();
-void quit(char **);
+void quit();
 
 int main() {
-    char *hist[500];
+    struct history history;
+    char *history_content[500];
+    history.hist = history_content;
+    history.length = 0;
+
     char *cursor = "-> ";
     char current_dir[PATH_MAX];
 
-    get_commands_history(hist);
+    get_commands_history(&history);
     greet_user();
 
     for(;;){
@@ -42,7 +46,7 @@ int main() {
             continue;
     }
 
-    quit(hist);
+    quit();
 }
 
 void input_parser(char *input, char *current_dir) {
@@ -94,7 +98,7 @@ void greet_user() {
     printf("Hi, %s\n\n", username);
 }
 
-void quit(char **hist) {
+void quit() {
     printf("Bye bye! :)\n");
     exit(0);
 }

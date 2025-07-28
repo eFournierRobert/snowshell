@@ -8,14 +8,16 @@
 
 FILE *get_hist_file_readptr();
 
-void get_commands_history(char **hist) {
+void get_commands_history(struct history *history) {
     char line[MAX_INPUT];
     ssize_t read;
     size_t line_len = MAX_INPUT;
     FILE *fptr = get_hist_file_readptr();
 
-    for (int i = 0; fgets(line, line_len, fptr); i++)
-        hist[i] = line;
+    for (int i = 0; fgets(line, line_len, fptr); i++) {
+        history -> hist[i] = line;
+        history -> length++;
+    }
     
     fclose(fptr);
 }
