@@ -18,8 +18,8 @@ void quit();
 
 int main() {
     struct history history;
-    char *history_content[500];
-    history.hist = history_content;
+    char *history_content[MAX_INPUT];
+    memcpy(history.hist, history_content, sizeof(history_content));
     history.length = 0;
 
     char *cursor = "-> ";
@@ -36,7 +36,7 @@ int main() {
 
         printf("[ %s ]%s ", current_dir, cursor);
         char input[MAX_INPUT];
-        int ret = snowshell_fgets(input);
+        int ret = snowshell_fgets(input, &history);
         if (ret == 0) {
             if (strcmp(input, "exit\n") == 0)
                 break;

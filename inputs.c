@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "inputs.h"
+#include "history.h"
 
 struct termios orig_termios;
 
@@ -58,8 +59,9 @@ char getch() {
     return c;
 }
 
-int snowshell_fgets(char *input) {
+int snowshell_fgets(char *input, struct history *history) {
     int quit = -1;
+    int hist_index = history->length;
 
     memset(input, '\0', sizeof(input));
 
@@ -77,12 +79,21 @@ int snowshell_fgets(char *input) {
                 quit = 1;
                 break;
             case BACKSPACE:
-                input[i - 1] = '\0';
-                printf("\b \b");
-                i -= 2;
+                if (i > 0) {
+                   input[i - 1] = '\0';
+                    printf("\b \b");
+                    i -= 2;
+                } else {
+                    i--;
+                }
                 break;
             case UP:
-                printf("up arrow");
+                if (hist_index > 0) {
+                    hist_index--;
+                    memcpy(input, history->hist[hist_index], strlen(history->hist[hist_index]));
+                    i = strlen(input);
+                    printf("%s", input);
+                }
                 break;
             case DOWN:
                 printf("down");

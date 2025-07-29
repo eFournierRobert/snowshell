@@ -15,7 +15,8 @@ void get_commands_history(struct history *history) {
     FILE *fptr = get_hist_file_readptr();
 
     for (int i = 0; fgets(line, line_len, fptr); i++) {
-        history -> hist[i] = line;
+        line[strlen(line) - 1] = '\0'; // remove newline char
+        memcpy(history->hist[i], line, strlen(line));
         history -> length++;
     }
     
