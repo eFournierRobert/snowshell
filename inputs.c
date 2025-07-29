@@ -10,6 +10,11 @@
 
 struct termios orig_termios;
 
+void remove_current_input(char *oldinput) {
+    for (int i = 0; i < strlen(oldinput); i++)
+        printf("\b \b");
+}
+
 void disable_raw_mode() {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
 }
@@ -63,7 +68,7 @@ int snowshell_fgets(char *input, struct history *history) {
     int quit = -1;
     int hist_index = history->length;
 
-    memset(input, '\0', sizeof(input));
+    memset(input, '\0', MAX_INPUT);
 
     for (int i = 0; i < MAX_INPUT && quit == -1; i++) {
         char c = getch();
@@ -89,14 +94,21 @@ int snowshell_fgets(char *input, struct history *history) {
                 break;
             case UP:
                 if (hist_index > 0) {
+                    remove_current_input(input);
                     hist_index--;
                     memcpy(input, history->hist[hist_index], strlen(history->hist[hist_index]));
-                    i = strlen(input);
+                    i = strlen(input) - 1;
                     printf("%s", input);
                 }
                 break;
             case DOWN:
-                printf("down");
+                if (hist_index < history->length) {
+                    remove_current_input(input);
+                    hist_index++;
+                    memcpy(input, history->hist[hist_index], strlen(history->hist[hist_index]));
+                    i = strlen(input) - 1;
+                    printf("%s", input);
+                }
                 break;
             case LEFT:
                 printf("left");
