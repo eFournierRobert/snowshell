@@ -15,6 +15,28 @@ void remove_current_input(char *oldinput) {
         printf("\b \b");
 }
 
+void go_back_hist(char *input, int *hist_index, struct history *history, int *cursor_pos) {
+    remove_current_input(input);
+    (*hist_index)--;
+    memcpy(input, history->hist[*hist_index], strlen(history->hist[*hist_index]));
+    *cursor_pos = strlen(input) - 1;
+    printf("%s", input);
+}
+
+void go_forward_hist(char *input, int *hist_index, struct history *history, int *cursor_pos) {
+    if (*hist_index == history->length - 1) {
+        remove_current_input(input);
+        *cursor_pos = -1;
+        memset(input, '\0', MAX_INPUT);
+    } else if (*hist_index < history->length) {
+        (*hist_index)++;
+        remove_current_input(input);
+        memcpy(input, history->hist[*hist_index], strlen(history->hist[*hist_index]));
+        *cursor_pos = strlen(input) - 1;
+        printf("%s", input);
+    }
+}
+
 void disable_raw_mode() {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
 }
@@ -94,25 +116,21 @@ int snowshell_fgets(char *input, struct history *history) {
                 break;
             case UP:
                 if (hist_index > 0) {
-                    remove_current_input(input);
-                    hist_index--;
-                    memcpy(input, history->hist[hist_index], strlen(history->hist[hist_index]));
-                    i = strlen(input) - 1;
-                    printf("%s", input);
+                    go_back_hist(
+                        input, 
+                        &hist_index, 
+                        history, 
+                        &i
+                    );
                 }
                 break;
             case DOWN:
-                if (hist_index == history->length - 1) {
-                    remove_current_input(input);
-                    i = -1;
-                    memset(input, '\0', MAX_INPUT);
-                } else if (hist_index < history->length) {
-                    hist_index++;
-                    remove_current_input(input);
-                    memcpy(input, history->hist[hist_index], strlen(history->hist[hist_index]));
-                    i = strlen(input) - 1;
-                    printf("%s", input);
-                }
+                go_forward_hist(
+                    input, 
+                    &hist_index, 
+                    history, 
+                    &i
+                );
                 break;
             case LEFT:
                 printf("left");
