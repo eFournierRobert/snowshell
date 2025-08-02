@@ -102,9 +102,13 @@ int snowshell_fgets(char *input, struct history *history) {
                 }
                 break;
             case DOWN:
-                if (hist_index < history->length) {
+                if (hist_index == history->length - 1) {
                     remove_current_input(input);
+                    i = -1;
+                    memset(input, '\0', MAX_INPUT);
+                } else if (hist_index < history->length) {
                     hist_index++;
+                    remove_current_input(input);
                     memcpy(input, history->hist[hist_index], strlen(history->hist[hist_index]));
                     i = strlen(input) - 1;
                     printf("%s", input);
