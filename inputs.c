@@ -40,16 +40,16 @@ char getch() {
             switch (seq2) {
                 case 'A': 
                     c = UP; 
-                    break; // Up
+                    break;
                 case 'B': 
                     c = DOWN; 
-                    break; // Down 
+                    break;
                 case 'C': 
                     c = RIGHT; 
-                    break; // Right 
+                    break;
                 case 'D': 
                     c = LEFT; 
-                    break; // Left
+                    break;
             }
         }
         // If not an arrow key, just return ESC
