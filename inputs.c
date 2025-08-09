@@ -37,6 +37,21 @@ void go_forward_hist(char *input, int *hist_index, struct history *history, int 
     }
 }
 
+void move_cursor_left(int *cursor_pos) {
+    if (*cursor_pos > 0) {
+        (*cursor_pos) -= 2;
+        printf("\033[D");
+    } else {
+        *cursor_pos = -1;
+    }
+}
+
+void move_cursor_right(int *cursor_pos, int current_input_size) {
+    if (*cursor_pos < current_input_size) {
+        printf("\033[C");
+    }
+}
+
 void disable_raw_mode() {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
 }
@@ -133,10 +148,10 @@ int snowshell_fgets(char *input, struct history *history) {
                 );
                 break;
             case LEFT:
-                printf("left");
+                move_cursor_left(&i);
                 break;
             case RIGHT:
-                printf("right");
+                move_cursor_right(&i, strlen(input));
                 break;
             default:
                 input[i] = c;
