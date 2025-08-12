@@ -11,8 +11,8 @@
 struct termios orig_termios;
 
 void remove_current_input(char *oldinput) {
-    for (int i = 0; i < strlen(oldinput); i++)
-        printf("\b \b");
+    printf("\r\033[K");
+    fflush(stdout);
 }
 
 void redraw_line(char *input, int cursor, int len, char *current_dir_cur) {
@@ -24,17 +24,18 @@ void redraw_line(char *input, int cursor, int len, char *current_dir_cur) {
     fflush(stdout);
 }
 
-void go_back_hist(char *input, int *hist_index, struct history *history, int *cursor_pos) {
+void go_back_hist(char *input, int *hist_index, struct history *history, int *cursor_pos, char *current_dir_cur) {
     remove_current_input(input);
     (*hist_index)--;
     memcpy(input, history->hist[*hist_index], strlen(history->hist[*hist_index]));
     *cursor_pos = strlen(input);
-    printf("%s", input);
+    printf("%s %s", current_dir_cur, input);
 }
 
-void go_forward_hist(char *input, int *hist_index, struct history *history, int *cursor_pos) {
+void go_forward_hist(char *input, int *hist_index, struct history *history, int *cursor_pos, char *current_dir_cur) {
     if (*hist_index == history->length - 1) {
         remove_current_input(input);
+        printf("%s", current_dir_cur);
         memset(input, '\0', MAX_INPUT);
         *cursor_pos = 0;
     } else if (*hist_index < history->length) {
@@ -42,7 +43,7 @@ void go_forward_hist(char *input, int *hist_index, struct history *history, int 
         remove_current_input(input);
         memcpy(input, history->hist[*hist_index], strlen(history->hist[*hist_index]));
         *cursor_pos = strlen(input) - 1;
-        printf("%s", input);
+        printf("%s %s", current_dir_cur, input);
     }
 }
 
@@ -148,7 +149,8 @@ int snowshell_fgets(char *input, struct history *history, char *current_dir_cur)
                         input, 
                         &hist_index, 
                         history, 
-                        &cursor
+                        &cursor,
+                        current_dir_cur
                     );
                     input_length = cursor;
                 }
@@ -158,7 +160,8 @@ int snowshell_fgets(char *input, struct history *history, char *current_dir_cur)
                     input, 
                     &hist_index, 
                     history, 
-                    &cursor
+                    &cursor,
+                    current_dir_cur
                 );
 
                 input_length = cursor;
