@@ -14,7 +14,7 @@
 void input_parser(char *, char *);
 void execute_app(char **);
 void greet_user();
-void quit();
+void quit(struct history *);
 void build_cursor(char *, char *, char *);
 
 int main() {
@@ -44,13 +44,16 @@ int main() {
         if (ret == 0) {
             if (strcmp(input, "exit\n") == 0)
                 break;
-            else if (input[0] != '\n')
+            else if (input[0] != '\n') {
+                input[strlen(input) - 1] = '\0';
+                push_to_hist(&history, input);
                 input_parser(input, current_dir);
+            }
         } else if (ret == 1)
             continue;
     }
 
-    quit();
+    quit(&history);
 }
 
 void build_cursor(char *dest, char *current_dir, char *cursor) {
@@ -66,11 +69,8 @@ void input_parser(char *input, char *current_dir) {
     char *tempargs[MAX_INPUT];
     int i = 0;
 
-    for (; token != NULL; token = strtok(NULL, " ")) { 
-        if (token[strlen(token) - 1] == '\n')
-            token[strlen(token) - 1] = '\0';
+    for (; token != NULL; token = strtok(NULL, " "))
         tempargs[i++] = token;
-    }
 
     if (strcmp(tempargs[0], "cd") == 0) {
         if (i < 2 || tempargs[1][0] == '~')
@@ -110,7 +110,8 @@ void greet_user() {
     printf("Hi, %s\n\n", username);
 }
 
-void quit() {
+void quit(struct history *history) {
+    write_hist(history);
     printf("Bye bye! :)\n");
     exit(0);
 }
