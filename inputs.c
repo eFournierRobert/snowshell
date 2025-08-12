@@ -15,6 +15,15 @@ void remove_current_input(char *oldinput) {
         printf("\b \b");
 }
 
+void redraw_line(char *input, int cursor, int len, char *current_dir_cur) {
+    printf("\r\033[K");
+    printf("%s", current_dir_cur);
+    fwrite(input, 1, len, stdout);
+    int move_back = len - cursor;
+    if (move_back > 0) printf("\033[%dD", move_back);
+    fflush(stdout);
+}
+
 void go_back_hist(char *input, int *hist_index, struct history *history, int *cursor_pos) {
     remove_current_input(input);
     (*hist_index)--;
@@ -26,8 +35,8 @@ void go_back_hist(char *input, int *hist_index, struct history *history, int *cu
 void go_forward_hist(char *input, int *hist_index, struct history *history, int *cursor_pos) {
     if (*hist_index == history->length - 1) {
         remove_current_input(input);
-        *cursor_pos = -1;
         memset(input, '\0', MAX_INPUT);
+        *cursor_pos = 0;
     } else if (*hist_index < history->length) {
         (*hist_index)++;
         remove_current_input(input);
@@ -105,7 +114,7 @@ char getch() {
     return c;
 }
 
-int snowshell_fgets(char *input, struct history *history) {
+int snowshell_fgets(char *input, struct history *history, char *current_dir_cur) {
     int quit = -1;
     int hist_index = history->length;
     int cursor = 0;
@@ -118,8 +127,8 @@ int snowshell_fgets(char *input, struct history *history) {
 
         switch(c) {
             case ENTER_KEY:
-                printf("\n");
-                input[cursor] = '\n';
+                putchar('\n');
+                input[input_length] = '\n';
                 quit = 0;
                 break;
             case CTRL_C:
@@ -128,7 +137,7 @@ int snowshell_fgets(char *input, struct history *history) {
                 break;
             case BACKSPACE:
                 if (input_length > 0) {
-                   input[cursor - 1] = '\0';
+                    input[cursor - 1] = '\0';
                     printf("\b \b");
                     cursor--;
                 }
@@ -158,13 +167,22 @@ int snowshell_fgets(char *input, struct history *history) {
                 move_cursor_left(&cursor);
                 break;
             case RIGHT:
-                move_cursor_right(&cursor, strlen(input));
+                move_cursor_right(&cursor, input_length);
                 break;
             default:
-                input[cursor] = c;
-                printf("%c", c);
-                input_length++;
-                cursor++;
+                if (input_length < MAX_INPUT) {
+                    if (cursor < input_length) {
+                        memmove(&input[cursor+1], &input[cursor], input_length - cursor);
+                        input[cursor] = c;
+                        cursor++;
+                        input_length++;
+                        redraw_line(input, cursor, input_length, current_dir_cur);
+                    } else {
+                        input[input_length++] = c;
+                        putchar(c);
+                        cursor++;
+                    }
+                }
                 break;
         }
     }

@@ -15,6 +15,7 @@ void input_parser(char *, char *);
 void execute_app(char **);
 void greet_user();
 void quit();
+void build_cursor(char *, char *, char *);
 
 int main() {
     struct history history;
@@ -34,9 +35,12 @@ int main() {
             return 1;
         }
 
-        printf("[ %s ]%s ", current_dir, cursor);
+        char current_dir_cur[strlen(current_dir) + strlen(cursor)];
+        build_cursor(current_dir_cur, current_dir, cursor);
+
+        printf("%s", current_dir_cur);
         char input[MAX_INPUT];
-        int ret = snowshell_fgets(input, &history);
+        int ret = snowshell_fgets(input, &history, current_dir_cur);
         if (ret == 0) {
             if (strcmp(input, "exit\n") == 0)
                 break;
@@ -47,6 +51,14 @@ int main() {
     }
 
     quit();
+}
+
+void build_cursor(char *dest, char *current_dir, char *cursor) {
+    dest[0] = '\0';
+    strcat(dest, "[ ");
+    strcat(dest, current_dir);
+    strcat(dest, " ]");
+    strcat(dest, cursor);
 }
 
 void input_parser(char *input, char *current_dir) {
