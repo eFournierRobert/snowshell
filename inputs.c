@@ -13,6 +13,7 @@ struct termios orig_termios;
 void remove_current_input(char *oldinput) {
     printf("\r\033[K");
     fflush(stdout);
+    memset(oldinput, '\0', MAX_INPUT);
 }
 
 void redraw_line(char *input, int cursor, int len, char *current_dir_cur) {
