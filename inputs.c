@@ -29,7 +29,7 @@ void go_back_hist(char *input, int *hist_index, struct history *history, int *cu
     (*hist_index)--;
     memcpy(input, history->hist[*hist_index], strlen(history->hist[*hist_index]));
     *cursor_pos = strlen(input);
-    printf("%s %s", current_dir_cur, input);
+    printf("%s%s", current_dir_cur, input);
 }
 
 void go_forward_hist(char *input, int *hist_index, struct history *history, int *cursor_pos, char *current_dir_cur) {
@@ -43,7 +43,7 @@ void go_forward_hist(char *input, int *hist_index, struct history *history, int 
         remove_current_input(input);
         memcpy(input, history->hist[*hist_index], strlen(history->hist[*hist_index]));
         *cursor_pos = strlen(input) - 1;
-        printf("%s %s", current_dir_cur, input);
+        printf("%s%s", current_dir_cur, input);
     }
 }
 
