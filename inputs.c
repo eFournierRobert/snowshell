@@ -19,7 +19,7 @@ void go_back_hist(char *input, int *hist_index, struct history *history, int *cu
     remove_current_input(input);
     (*hist_index)--;
     memcpy(input, history->hist[*hist_index], strlen(history->hist[*hist_index]));
-    *cursor_pos = strlen(input) - 1;
+    *cursor_pos = strlen(input);
     printf("%s", input);
 }
 
@@ -39,16 +39,15 @@ void go_forward_hist(char *input, int *hist_index, struct history *history, int 
 
 void move_cursor_left(int *cursor_pos) {
     if (*cursor_pos > 0) {
-        (*cursor_pos) -= 2;
+        (*cursor_pos)--;
         printf("\033[D");
-    } else {
-        *cursor_pos = -1;
     }
 }
 
 void move_cursor_right(int *cursor_pos, int current_input_size) {
     if (*cursor_pos < current_input_size) {
         printf("\033[C");
+        (*cursor_pos)++;
     }
 }
 
@@ -109,16 +108,18 @@ char getch() {
 int snowshell_fgets(char *input, struct history *history) {
     int quit = -1;
     int hist_index = history->length;
+    int cursor = 0;
+    int input_length = 0;
 
     memset(input, '\0', MAX_INPUT);
 
-    for (int i = 0; i < MAX_INPUT && quit == -1; i++) {
+    while (quit == -1 && input_length < MAX_INPUT) {
         char c = getch();
 
         switch(c) {
             case ENTER_KEY:
                 printf("\n");
-                input[i] = '\n';
+                input[cursor] = '\n';
                 quit = 0;
                 break;
             case CTRL_C:
@@ -126,12 +127,10 @@ int snowshell_fgets(char *input, struct history *history) {
                 quit = 1;
                 break;
             case BACKSPACE:
-                if (i > 0) {
-                   input[i - 1] = '\0';
+                if (input_length > 0) {
+                   input[cursor - 1] = '\0';
                     printf("\b \b");
-                    i -= 2;
-                } else {
-                    i--;
+                    cursor--;
                 }
                 break;
             case UP:
@@ -140,8 +139,9 @@ int snowshell_fgets(char *input, struct history *history) {
                         input, 
                         &hist_index, 
                         history, 
-                        &i
+                        &cursor
                     );
+                    input_length = cursor;
                 }
                 break;
             case DOWN:
@@ -149,18 +149,22 @@ int snowshell_fgets(char *input, struct history *history) {
                     input, 
                     &hist_index, 
                     history, 
-                    &i
+                    &cursor
                 );
+
+                input_length = cursor;
                 break;
             case LEFT:
-                move_cursor_left(&i);
+                move_cursor_left(&cursor);
                 break;
             case RIGHT:
-                move_cursor_right(&i, strlen(input));
+                move_cursor_right(&cursor, strlen(input));
                 break;
             default:
-                input[i] = c;
+                input[cursor] = c;
                 printf("%c", c);
+                input_length++;
+                cursor++;
                 break;
         }
     }
