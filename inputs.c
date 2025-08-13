@@ -79,10 +79,11 @@ void enable_raw_mode() {
 char getch() {
     enable_raw_mode();
     char c = getchar();
+    char seq1, seq2;
     switch (c) {
         case '\x1b':
-            char seq1 = getchar();
-            char seq2 = getchar();
+            seq1 = getchar();
+            seq2 = getchar();
 
             if (seq1 == '[') {
                 switch (seq2) {
@@ -142,6 +143,7 @@ int snowshell_fgets(char *input, struct history *history, char *current_dir_cur)
                     input[cursor - 1] = '\0';
                     printf("\b \b");
                     cursor--;
+                    input_length--;
                 }
                 break;
             case UP:
