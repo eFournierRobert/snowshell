@@ -6,6 +6,6 @@ Small and simple shell made in C.
 
 - [x] Working program execution
 - [x] Directory navigation
-- [ ] Commands history
+- [x] Commands history
 - [ ] Piping
 - [ ] Configuration
