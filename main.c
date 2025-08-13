@@ -44,7 +44,7 @@ int main() {
         if (ret == 0) {
             if (strcmp(input, "exit\n") == 0)
                 break;
-            else if (input[0] != '\n') {
+            else if (input[0] != '\n' && input[0] != ' ') {
                 input[strlen(input) - 1] = '\0';
                 push_to_hist(&history, input);
                 input_parser(input, current_dir);
