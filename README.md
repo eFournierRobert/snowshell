@@ -8,4 +8,4 @@ Small and simple shell made in C.
 - [x] Directory navigation
 - [x] Commands history
 - [ ] Piping
-- [ ] Configuration
+- [ ] Refactoring
