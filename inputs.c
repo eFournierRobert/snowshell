@@ -43,7 +43,7 @@ void go_forward_hist(char *input, int *hist_index, struct history *history, int 
         (*hist_index)++;
         remove_current_input(input);
         memcpy(input, history->hist[*hist_index], strlen(history->hist[*hist_index]));
-        *cursor_pos = strlen(input) - 1;
+        *cursor_pos = strlen(input);
         printf("%s%s", current_dir_cur, input);
     }
 }
