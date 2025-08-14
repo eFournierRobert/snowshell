@@ -110,7 +110,7 @@ void input_parser(char *input, char *current_dir) {
         if (argc < 2 || args[1][0] == '~')
             goto_home_dir();
         else
-            change_dir(args, current_dir);
+            change_dir(args, argc, current_dir);
     } else {
         args[argc] = NULL; // Terminate with NULL for execvp
         execute_app(args);
