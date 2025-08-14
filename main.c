@@ -115,12 +115,23 @@ void input_parser(char *input, char *current_dir) {
     }
 }
 
-void greet_user() {
+/**
+ * @brief Prints a small hello message to the user!
+ * 
+ */
+static inline void greet_user() {
     char *username = getlogin();
     printf("Hi, %s\n\n", username);
 }
 
-void quit(struct history *history) {
+/**
+ * @brief Handles the closing of the shell and print a nice bye message.
+ * 
+ * @param history The history struct that holds the current history to be saved.
+ *
+ * @note Calls write_hist to save history to ~/.snowshell_history.
+ */
+static inline void quit(struct history *history) {
     write_hist(history);
     printf("Bye bye! :)\n");
     exit(0);
