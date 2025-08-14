@@ -1,3 +1,9 @@
+/**
+ * @file main.c
+ * @author Elliott Fournier-Robert
+ * @brief File where the main function of Snowshell is
+ */
+
 #include <asm-generic/errno-base.h>
 #include <errno.h>
 #include <linux/limits.h>
@@ -11,11 +17,73 @@
 #include "inputs.h"
 #include "dir.h"
 
-void input_parser(char *, char *);
-void execute_app(char **);
-void greet_user();
-void quit(struct history *);
-void build_cursor(char *, char *, char *);
+/**
+ * @brief Function that builds the cursor and puts it inside the variable 
+ pointed to by dest. The cursor will be built like this: [ *current_dir ]*cursor
+ * 
+ * @param dest The destination of the cursor being built
+ * @param current_dir A string of the current directory (like /home/user/doc)
+ * @param cursor The cursor you want to have aside from the directory (like ->)
+ */
+void build_cursor(char *dest, char *current_dir, char *cursor) {
+    dest[0] = '\0';
+    strcat(dest, "[ ");
+    strcat(dest, current_dir);
+    strcat(dest, " ]");
+    strcat(dest, cursor);
+}
+
+void execute_app(char *args[]) {
+    pid_t pid = fork();
+    
+    if (pid < 0) {
+        perror("Couldn't create fork");
+        exit(EXIT_FAILURE);
+    } else if (pid == 0) {
+        if (execvp(args[0], args) == -1 && errno == ENOENT) {
+            printf("Snowshell: command not found: %s\n", args[0]);
+        }
+
+        // Child was continuing to run and not stopping after execvp for some reason
+        exit(EXIT_SUCCESS);
+    } else
+        wait(NULL);
+}
+
+void input_parser(char *input, char *current_dir) {
+    char *token = strtok(input, " ");
+    char *tempargs[MAX_INPUT];
+    int i = 0;
+
+    for (; token != NULL; token = strtok(NULL, " "))
+        tempargs[i++] = token;
+
+    if (strcmp(tempargs[0], "cd") == 0) {
+        if (i < 2 || tempargs[1][0] == '~')
+            goto_home_dir();
+        else
+            change_dir(tempargs, current_dir);
+    } else {
+        char *args[i+1];
+        for (int j = 0; j < i; j++) 
+            args[j] = tempargs[j];
+        args[i] = NULL; // NULL terminating for execvp
+
+        execute_app(args);
+        input = NULL;
+    }
+}
+
+void greet_user() {
+    char *username = getlogin();
+    printf("Hi, %s\n\n", username);
+}
+
+void quit(struct history *history) {
+    write_hist(history);
+    printf("Bye bye! :)\n");
+    exit(0);
+}
 
 int main() {
     struct history history;
@@ -54,64 +122,4 @@ int main() {
     }
 
     quit(&history);
-}
-
-void build_cursor(char *dest, char *current_dir, char *cursor) {
-    dest[0] = '\0';
-    strcat(dest, "[ ");
-    strcat(dest, current_dir);
-    strcat(dest, " ]");
-    strcat(dest, cursor);
-}
-
-void input_parser(char *input, char *current_dir) {
-    char *token = strtok(input, " ");
-    char *tempargs[MAX_INPUT];
-    int i = 0;
-
-    for (; token != NULL; token = strtok(NULL, " "))
-        tempargs[i++] = token;
-
-    if (strcmp(tempargs[0], "cd") == 0) {
-        if (i < 2 || tempargs[1][0] == '~')
-            goto_home_dir();
-        else
-            change_dir(tempargs, current_dir);
-    } else {
-        char *args[i+1];
-        for (int j = 0; j < i; j++) 
-            args[j] = tempargs[j];
-        args[i] = NULL; // NULL terminating for execvp
-
-        execute_app(args);
-        input = NULL;
-    }
-}
-
-void execute_app(char *args[]) {
-    pid_t pid = fork();
-    
-    if (pid < 0) {
-        perror("Couldn't create fork");
-        exit(EXIT_FAILURE);
-    } else if (pid == 0) {
-        if (execvp(args[0], args) == -1 && errno == ENOENT) {
-            printf("Snowshell: command not found: %s\n", args[0]);
-        }
-
-        // Child was continuing to run and not stopping after execvp for some reason
-        exit(EXIT_SUCCESS);
-    } else
-        wait(NULL);
-}
-
-void greet_user() {
-    char *username = getlogin();
-    printf("Hi, %s\n\n", username);
-}
-
-void quit(struct history *history) {
-    write_hist(history);
-    printf("Bye bye! :)\n");
-    exit(0);
 }
