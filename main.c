@@ -5,8 +5,10 @@
  */
 
 #include <asm-generic/errno-base.h>
+#include <complex.h>
 #include <errno.h>
 #include <linux/limits.h>
+#include <stddef.h>
 #include <sys/wait.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -18,19 +20,29 @@
 #include "dir.h"
 
 /**
- * @brief Function that builds the cursor and puts it inside the variable 
- pointed to by dest. The cursor will be built like this: [ *current_dir ]*cursor
+ * @brief Builds a shell prompt like: "[ <current_dir> ]<suffix>"
  * 
- * @param dest The destination of the cursor being built
- * @param current_dir A string of the current directory (like /home/user/doc)
- * @param cursor The cursor you want to have aside from the directory (like ->)
+ * @param[out] dest Output buffer for the prompt 
+ * @param[in] destsz Size of @p dest in bytes (including the null terminator)
+ * @param[in] current_dir Absolute or display path
+ * @param[in] suffix Prompt suffix (e.g., "->" or "#")
+ *
+ * @return int Number of chars written (excluding the null terminator), or
+ *             -1 if truncation would occur or on invalid arguments.
+ *
+ * @pre dest != NULL, current_dir != NULL, suffix != NULL, destsz > 0.
+ * @note Result format: "[ %s ]%s".
+ * @warning Returns -1 if the formatted string does not fit in @p dest.
  */
-void build_cursor(char *dest, char *current_dir, char *cursor) {
-    dest[0] = '\0';
-    strcat(dest, "[ ");
-    strcat(dest, current_dir);
-    strcat(dest, " ]");
-    strcat(dest, cursor);
+int build_prompt(char *dest, size_t destsz, char *current_dir, char *suffix) {
+    if (!dest || !current_dir || !suffix || destsz == 0)
+        return -1;
+    
+    int n = snprintf(dest, destsz, "[ %s ]%s", current_dir, suffix);
+    if (n < 0 || (size_t)n >= destsz)
+        return -1;
+
+    return n;
 }
 
 void execute_app(char *args[]) {
@@ -91,7 +103,9 @@ int main() {
     memcpy(history.hist, history_content, sizeof(history_content));
     history.length = 0;
 
-    char *cursor = "-> ";
+    char *prompt_suffix = "-> ";
+    int prompt_suffix_size = strlen(prompt_suffix);
+    int prompt_buffer = 5;
     char current_dir[PATH_MAX];
 
     get_commands_history(&history);
@@ -103,12 +117,13 @@ int main() {
             return 1;
         }
 
-        char current_dir_cur[strlen(current_dir) + strlen(cursor)];
-        build_cursor(current_dir_cur, current_dir, cursor);
+        char prompt[strlen(current_dir) + prompt_suffix_size + 5];
+        if (build_prompt(prompt, sizeof(prompt), current_dir, prompt_suffix) == -1)
+            printf("Couldn't build shell prompt correctly\n");
 
-        printf("%s", current_dir_cur);
+        printf("%s", prompt);
         char input[MAX_INPUT];
-        int ret = snowshell_fgets(input, &history, current_dir_cur);
+        int ret = snowshell_fgets(input, &history, prompt);
         if (ret == 0) {
             if (strcmp(input, "exit\n") == 0)
                 break;
