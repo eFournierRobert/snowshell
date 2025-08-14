@@ -45,21 +45,39 @@ int build_prompt(char *dest, size_t destsz, char *current_dir, char *suffix) {
     return n;
 }
 
-void execute_app(char *args[]) {
+void execute_app(char *const args[]) {
     pid_t pid = fork();
     
     if (pid < 0) {
-        perror("Couldn't create fork");
-        exit(EXIT_FAILURE);
+        perror("fork");
+        return;
     } else if (pid == 0) {
-        if (execvp(args[0], args) == -1 && errno == ENOENT) {
-            printf("Snowshell: command not found: %s\n", args[0]);
-        }
+        execvp(args[0], args);
 
-        // Child was continuing to run and not stopping after execvp for some reason
-        exit(EXIT_SUCCESS);
-    } else
-        wait(NULL);
+        int err = errno;
+        switch (err) {
+            case ENOENT:
+                fprintf(stderr, "snowshell: %s: command not found\n", args[0]);
+                _exit(127);
+                break;
+            case EACCES:
+                fprintf(stderr, "snowshell: %s: permission denied\n", args[0]);
+                _exit(126);
+                break;
+            default:
+                fprintf(stderr, "snowshell: %s: %s\n", args[0], strerror(err));
+                _exit(126);
+                break;
+        
+        }
+    }
+
+    int status;
+    while (waitpid(pid, &status, 0) == -1) {
+        if (errno == EINTR) continue;
+        perror("waitpid");
+        break;
+    }
 }
 
 void input_parser(char *input, char *current_dir) {
