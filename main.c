@@ -57,11 +57,12 @@ int build_prompt(char *dest, size_t destsz, char *current_dir, char *suffix) {
  */
 void execute_app(char *const args[]) {
     pid_t pid = fork();
-    
     if (pid < 0) {
         perror("fork");
         return;
-    } else if (pid == 0) {
+    }
+    
+    if (pid == 0) {
         execvp(args[0], args);
 
         int err = errno;
