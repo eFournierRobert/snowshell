@@ -159,7 +159,7 @@ int main() {
 
         size_t prompt_size = strlen(current_dir) + prompt_suffix_size + PROMPT_BUFFER;
         char prompt[prompt_size];
-        
+
         if (build_prompt(prompt, prompt_size, current_dir, prompt_suffix) == -1)
             printf("Couldn't build shell prompt correctly\n");
 
@@ -174,8 +174,7 @@ int main() {
                 push_to_hist(&history, input);
                 input_parser(input, current_dir);
             }
-        } else if (ret == 1)
-            continue;
+        }
     }
 
     quit(&history);
