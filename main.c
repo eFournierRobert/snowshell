@@ -19,6 +19,8 @@
 #include "inputs.h"
 #include "dir.h"
 
+#define MAX_ARGS 128
+
 /**
  * @brief Builds a shell prompt like: "[ <current_dir> ]<suffix>".
  * 
@@ -89,25 +91,20 @@ void execute_app(char *const args[]) {
 
 void input_parser(char *input, char *current_dir) {
     char *token = strtok(input, " ");
-    char *tempargs[MAX_INPUT];
-    int i = 0;
+    char *args[MAX_ARGS];
+    int argc = 0;
 
     for (; token != NULL; token = strtok(NULL, " "))
-        tempargs[i++] = token;
+        args[argc++] = token;
 
-    if (strcmp(tempargs[0], "cd") == 0) {
-        if (i < 2 || tempargs[1][0] == '~')
+    if (strcmp(args[0], "cd") == 0) {
+        if (argc < 2 || args[1][0] == '~')
             goto_home_dir();
         else
-            change_dir(tempargs, current_dir);
+            change_dir(args, current_dir);
     } else {
-        char *args[i+1];
-        for (int j = 0; j < i; j++) 
-            args[j] = tempargs[j];
-        args[i] = NULL; // NULL terminating for execvp
-
+        args[argc] = NULL;
         execute_app(args);
-        input = NULL;
     }
 }
 
