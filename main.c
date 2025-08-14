@@ -20,12 +20,12 @@
 #include "dir.h"
 
 /**
- * @brief Builds a shell prompt like: "[ <current_dir> ]<suffix>"
+ * @brief Builds a shell prompt like: "[ <current_dir> ]<suffix>".
  * 
- * @param[out] dest Output buffer for the prompt 
- * @param[in] destsz Size of @p dest in bytes (including the null terminator)
- * @param[in] current_dir Absolute or display path
- * @param[in] suffix Prompt suffix (e.g., "->" or "#")
+ * @param[out] dest Output buffer for the prompt .
+ * @param[in] destsz Size of @p dest in bytes (including the null terminator).
+ * @param[in] current_dir Absolute or display path.
+ * @param[in] suffix Prompt suffix (e.g., "->" or "#").
  *
  * @return int Number of chars written (excluding the null terminator), or
  *             -1 if truncation would occur or on invalid arguments.
@@ -45,6 +45,13 @@ int build_prompt(char *dest, size_t destsz, char *current_dir, char *suffix) {
     return n;
 }
 
+/**
+ * @brief Fork and execute the given app in args with execvp.
+ * 
+ * @param args The app and its arguments to execute.
+ *
+ * @note In case of errors, it will print the information to stderr.
+ */
 void execute_app(char *const args[]) {
     pid_t pid = fork();
     
