@@ -89,6 +89,13 @@ void execute_app(char *const args[]) {
     }
 }
 
+/**
+ * @brief Takes the input and parses it before executing it.
+ * 
+ * @param input The raw user input string.
+ * @param current_dir The absolute path of the current directory in case 
+ *        we need to change directory (like "cd <dir>").
+ */
 void input_parser(char *input, char *current_dir) {
     char *token = strtok(input, " ");
     char *args[MAX_ARGS];
@@ -103,7 +110,7 @@ void input_parser(char *input, char *current_dir) {
         else
             change_dir(args, current_dir);
     } else {
-        args[argc] = NULL;
+        args[argc] = NULL; // Terminate with NULL for execvp
         execute_app(args);
     }
 }
