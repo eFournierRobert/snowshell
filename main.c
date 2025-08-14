@@ -20,6 +20,7 @@
 #include "dir.h"
 
 #define MAX_ARGS 128
+#define PROMPT_BUFFER 5
 
 /**
  * @brief Builds a shell prompt like: "[ <current_dir> ]<suffix>".
@@ -145,7 +146,6 @@ int main() {
 
     char *prompt_suffix = "-> ";
     int prompt_suffix_size = strlen(prompt_suffix);
-    int prompt_buffer = 5;
     char current_dir[PATH_MAX];
 
     get_commands_history(&history);
@@ -157,7 +157,7 @@ int main() {
             return 1;
         }
 
-        char prompt[strlen(current_dir) + prompt_suffix_size + 5];
+        char prompt[strlen(current_dir) + prompt_suffix_size + PROMPT_BUFFER];
         if (build_prompt(prompt, sizeof(prompt), current_dir, prompt_suffix) == -1)
             printf("Couldn't build shell prompt correctly\n");
 
