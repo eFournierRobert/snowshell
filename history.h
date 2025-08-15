@@ -3,6 +3,11 @@
 #define MAX_HIST_SIZE 500
 #include <linux/limits.h>
 
+/**
+ * @brief Struct containing the commands history.
+ * - hist[MAX_HIST_SIZE][MAX_INPUT] is the string array of commands in history.
+ * - length is the length of hist.
+ */
 struct history {
     char hist[MAX_HIST_SIZE][MAX_INPUT];
     int length;
