@@ -194,7 +194,7 @@ char getch() {
  * @param[in] prompt The current shell prompt.
  * @return int Returns 0 if it was exited with ENTER or 1 if CTRL-C.
  *
- * @note **It assumed input is an char array of size MAX_INPUT.**
+ * @warning **It assumed input is an char array of size MAX_INPUT.**
  */
 int snowshell_fgets(char *input, struct history *history, char *prompt) {
     int quit = -1;
