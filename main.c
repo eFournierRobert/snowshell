@@ -1,6 +1,14 @@
+/**
+ * @file main.c
+ * @author Elliott Fournier-Robert
+ * @brief File where the main function of Snowshell is
+ */
+
 #include <asm-generic/errno-base.h>
+#include <complex.h>
 #include <errno.h>
 #include <linux/limits.h>
+#include <stddef.h>
 #include <sys/wait.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -11,11 +19,125 @@
 #include "inputs.h"
 #include "dir.h"
 
-void input_parser(char *, char *);
-void execute_app(char **);
-void greet_user();
-void quit(struct history *);
-void build_cursor(char *, char *, char *);
+#define MAX_ARGS 128
+#define PROMPT_BUFFER 5
+
+/**
+ * @brief Builds a shell prompt like: "[ <current_dir> ]<suffix>".
+ * 
+ * @param[out] dest Output buffer for the prompt .
+ * @param[in] destsz Size of @p dest in bytes (including the null terminator).
+ * @param[in] current_dir Absolute or display path.
+ * @param[in] suffix Prompt suffix (e.g., "->" or "#").
+ *
+ * @return int Number of chars written (excluding the null terminator), or
+ *             -1 if truncation would occur or on invalid arguments.
+ *
+ * @pre dest != NULL, current_dir != NULL, suffix != NULL, destsz > 0.
+ * @note Result format: "[ %s ]%s".
+ * @warning Returns -1 if the formatted string does not fit in @p dest.
+ */
+int build_prompt(char *dest, size_t destsz, char *current_dir, char *suffix) {
+    if (!dest || !current_dir || !suffix || destsz == 0)
+        return -1;
+    
+    int n = snprintf(dest, destsz, "[ %s ]%s", current_dir, suffix);
+    if (n < 0 || (size_t)n >= destsz)
+        return -1;
+
+    return n;
+}
+
+/**
+ * @brief Fork and execute the given app in args with execvp.
+ * 
+ * @param args The app and its arguments to execute.
+ *
+ * @note In case of errors, it will print the information to stderr.
+ */
+void execute_app(char *const args[]) {
+    pid_t pid = fork();
+    if (pid < 0) {
+        perror("fork");
+        return;
+    }
+    
+    if (pid == 0) {
+        execvp(args[0], args);
+
+        int err = errno;
+        switch (err) {
+            case ENOENT:
+                fprintf(stderr, "snowshell: %s: command not found\n", args[0]);
+                _exit(127);
+                break;
+            case EACCES:
+                fprintf(stderr, "snowshell: %s: permission denied\n", args[0]);
+                _exit(126);
+                break;
+            default:
+                fprintf(stderr, "snowshell: %s: %s\n", args[0], strerror(err));
+                _exit(126);
+                break;
+        
+        }
+    }
+
+    int status;
+    while (waitpid(pid, &status, 0) == -1) {
+        if (errno == EINTR) continue;
+        perror("waitpid");
+        break;
+    }
+}
+
+/**
+ * @brief Takes the input and parses it before executing it.
+ * 
+ * @param input The raw user input string.
+ * @param current_dir The absolute path of the current directory in case 
+ *        we need to change directory (like "cd <dir>").
+ */
+void input_parser(char *input, char *current_dir) {
+    char *token = strtok(input, " ");
+    char *args[MAX_ARGS];
+    int argc = 0;
+
+    for (; token != NULL; token = strtok(NULL, " "))
+        args[argc++] = token;
+
+    if (strcmp(args[0], "cd") == 0) {
+        if (argc < 2 || args[1][0] == '~')
+            goto_home_dir();
+        else
+            change_dir(args, argc, current_dir);
+    } else {
+        args[argc] = NULL; // Terminate with NULL for execvp
+        execute_app(args);
+    }
+}
+
+/**
+ * @brief Prints a small hello message to the user!
+ * 
+ */
+static inline void greet_user() {
+    char *username = getlogin();
+    printf("Hi, %s\n\n", username);
+}
+
+/**
+ * @brief Handles the closing of the shell and print a nice bye message.
+ * 
+ * @param history The history struct that holds the current history to be saved.
+ *
+ * @note Calls write_hist to save history to ~/.snowshell_history.
+ */
+static inline void quit(struct history *history) {
+    write_hist(history);
+    printf("Bye bye! :)\n");
+    exit(0);
+}
 
 int main() {
     struct history history;
@@ -23,7 +145,8 @@ int main() {
     memcpy(history.hist, history_content, sizeof(history_content));
     history.length = 0;
 
-    char *cursor = "-> ";
+    char *prompt_suffix = "-> ";
+    int prompt_suffix_size = strlen(prompt_suffix);
     char current_dir[PATH_MAX];
 
     get_commands_history(&history);
@@ -35,12 +158,15 @@ int main() {
             return 1;
         }
 
-        char current_dir_cur[strlen(current_dir) + strlen(cursor)];
-        build_cursor(current_dir_cur, current_dir, cursor);
+        size_t prompt_size = strlen(current_dir) + prompt_suffix_size + PROMPT_BUFFER;
+        char prompt[prompt_size];
 
-        printf("%s", current_dir_cur);
+        if (build_prompt(prompt, prompt_size, current_dir, prompt_suffix) == -1)
+            printf("Couldn't build shell prompt correctly\n");
+
+        printf("%s", prompt);
         char input[MAX_INPUT];
-        int ret = snowshell_fgets(input, &history, current_dir_cur);
+        int ret = snowshell_fgets(input, &history, prompt);
         if (ret == 0) {
             if (strcmp(input, "exit\n") == 0)
                 break;
@@ -49,69 +175,8 @@ int main() {
                 push_to_hist(&history, input);
                 input_parser(input, current_dir);
             }
-        } else if (ret == 1)
-            continue;
+        }
     }
 
     quit(&history);
-}
-
-void build_cursor(char *dest, char *current_dir, char *cursor) {
-    dest[0] = '\0';
-    strcat(dest, "[ ");
-    strcat(dest, current_dir);
-    strcat(dest, " ]");
-    strcat(dest, cursor);
-}
-
-void input_parser(char *input, char *current_dir) {
-    char *token = strtok(input, " ");
-    char *tempargs[MAX_INPUT];
-    int i = 0;
-
-    for (; token != NULL; token = strtok(NULL, " "))
-        tempargs[i++] = token;
-
-    if (strcmp(tempargs[0], "cd") == 0) {
-        if (i < 2 || tempargs[1][0] == '~')
-            goto_home_dir();
-        else
-            change_dir(tempargs, current_dir);
-    } else {
-        char *args[i+1];
-        for (int j = 0; j < i; j++) 
-            args[j] = tempargs[j];
-        args[i] = NULL; // NULL terminating for execvp
-
-        execute_app(args);
-        input = NULL;
-    }
-}
-
-void execute_app(char *args[]) {
-    pid_t pid = fork();
-    
-    if (pid < 0) {
-        perror("Couldn't create fork");
-        exit(EXIT_FAILURE);
-    } else if (pid == 0) {
-        if (execvp(args[0], args) == -1 && errno == ENOENT) {
-            printf("Snowshell: command not found: %s\n", args[0]);
-        }
-
-        // Child was continuing to run and not stopping after execvp for some reason
-        exit(EXIT_SUCCESS);
-    } else
-        wait(NULL);
-}
-
-void greet_user() {
-    char *username = getlogin();
-    printf("Hi, %s\n\n", username);
-}
-
-void quit(struct history *history) {
-    write_hist(history);
-    printf("Bye bye! :)\n");
-    exit(0);
 }

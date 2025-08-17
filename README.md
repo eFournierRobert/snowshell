@@ -7,5 +7,5 @@ Small and simple shell made in C.
 - [x] Working program execution
 - [x] Directory navigation
 - [x] Commands history
-- [ ] Documentation / Refactoring
+- [x] Documentation / Refactoring
 - [ ] Piping
