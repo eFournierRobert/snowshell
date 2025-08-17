@@ -101,14 +101,13 @@ void execute_app(char *const args[]) {
  */
 void input_parser(char *input, char *current_dir) {
     wordexp_t p;
-    wordexp(input, &p, 0);
+    
+    if (wordexp(input, &p, WRDE_NOCMD) != 0)
+        return;
 
-    if (strcmp(p.we_wordv[0], "cd") == 0) {
-        if (p.we_wordc < 2 || p.we_wordv[1][0] == '~')
-            goto_home_dir();
-        else
-            change_dir(p.we_wordv, p.we_wordc, current_dir);
-    } else {
+    if (strcmp(p.we_wordv[0], "cd") == 0)
+        change_dir(p.we_wordv, p.we_wordc, current_dir);
+    else {
         p.we_wordv[p.we_wordc] = NULL; // Terminate with NULL for execvp
         execute_app(p.we_wordv);
     }
