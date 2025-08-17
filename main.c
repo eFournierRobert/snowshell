@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wordexp.h>
 
 #include "history.h"
 #include "inputs.h"
@@ -99,22 +100,19 @@ void execute_app(char *const args[]) {
  *        we need to change directory (like "cd <dir>").
  */
 void input_parser(char *input, char *current_dir) {
-    char *token = strtok(input, " ");
-    char *args[MAX_ARGS];
-    int argc = 0;
+    wordexp_t p;
+    
+    if (wordexp(input, &p, WRDE_NOCMD) != 0)
+        return;
 
-    for (; token != NULL; token = strtok(NULL, " "))
-        args[argc++] = token;
-
-    if (strcmp(args[0], "cd") == 0) {
-        if (argc < 2 || args[1][0] == '~')
-            goto_home_dir();
-        else
-            change_dir(args, argc, current_dir);
-    } else {
-        args[argc] = NULL; // Terminate with NULL for execvp
-        execute_app(args);
+    if (strcmp(p.we_wordv[0], "cd") == 0)
+        change_dir(p.we_wordv, p.we_wordc, current_dir);
+    else {
+        p.we_wordv[p.we_wordc] = NULL; // Terminate with NULL for execvp
+        execute_app(p.we_wordv);
     }
+
+    wordfree(&p);
 }
 
 /**
@@ -138,6 +136,7 @@ static inline void quit(struct history *history) {
     printf("Bye bye! :)\n");
     exit(0);
 }
+
 
 int main() {
     struct history history;
