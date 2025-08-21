@@ -9,6 +9,13 @@
 #include "dir.h"
 #include "execute.h"
 
+/**
+ * @brief Gets the current errno value and checks what is the error
+ *        returned by execvp().
+ * 
+ * @param err The current value of errno.
+ * @param arg0 The program that was just ran (args[0]).
+ */
 void execvp_error_catching(int err, char *arg0) {
     switch (err) {
         case ENOENT:
@@ -27,6 +34,11 @@ void execvp_error_catching(int err, char *arg0) {
     }
 }
 
+/**
+ * @brief Executes the given args without piping.
+ * 
+ * @param args The args to execute.
+ */
 void simple_execute(char *const args[]) {
     pid_t pid = fork();
     if (pid < 0) {
@@ -47,6 +59,13 @@ void simple_execute(char *const args[]) {
     }
 }
 
+/**
+ * @brief Parses the input knowing it doesn't contain any pipes,
+ *        then executes it.
+ * 
+ * @param input The current user input in the shell.
+ * @param current_dir The current absolute path. 
+ */
 void simple_parse(char *input, char *current_dir) {
     wordexp_t p;
     
@@ -63,6 +82,14 @@ void simple_parse(char *input, char *current_dir) {
     wordfree(&p);
 }
 
+/**
+ * @brief Executes the given input with piping.
+ *        It makes sure to parse it the right way too.
+ * 
+ * @param input The current user input in the shell.
+ * @param current_dir The current absolute path.
+ * @param nb_of_pipes The number of '|' in the user input.
+ */
 void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
     int pipefd[nb_of_pipes][2];
     for (int i = 0; i < nb_of_pipes; i++) {
@@ -121,6 +148,12 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
         while (waitpid(pids[i], &status, 0) == -1) {}
 }
 
+/**
+ * @brief Get the number of pipe character '|' in the given input.
+ * 
+ * @param input The input to check.
+ * @return int The number of appearence of '|'.
+ */
 int get_nb_of_pipes(char *input) {
     int total_pipes = 0;
     for (int i = 0; i < strlen(input); i++) {
@@ -131,6 +164,12 @@ int get_nb_of_pipes(char *input) {
     return total_pipes;
 }
 
+/**
+ * @brief Parses the given input then executes it.
+ * 
+ * @param input The user input in the shell.
+ * @param current_dir The current absolute path.
+ */
 void parse_and_execute(char *input, char *current_dir) {
     int nb_of_pipes = get_nb_of_pipes(input);
     if (nb_of_pipes == 0) 
