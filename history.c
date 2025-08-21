@@ -25,12 +25,11 @@ static inline void build_path_to_hist_file(char *dest) {
  * @note The FILE pointer being returned is the return of fopen();
  */
 FILE *get_hist_file_readptr() {
-    char fname[PATH_MAX];
+    char fname[PATH_MAX] = {0};
     build_path_to_hist_file(fname);
-    FILE *fptr;
 
     if (access(fname, F_OK) != 0) {
-        fptr = fopen(fname, "w");
+        FILE * fptr = fopen(fname, "w");
         fclose(fptr);
     }
 
@@ -44,8 +43,8 @@ FILE *get_hist_file_readptr() {
  * @param[out] history The struct history to populate.
  */
 void get_commands_history(struct history *history) {
-    char line[MAX_INPUT];
-    ssize_t read;
+    char line[MAX_INPUT] = {0};
+    ssize_t read = 0;
     size_t line_len = MAX_INPUT;
     FILE *fptr = get_hist_file_readptr();
 
@@ -66,7 +65,7 @@ void get_commands_history(struct history *history) {
  * @note It deletes and rewrite the whole file. It does not just append to it.
  */
 void write_hist(struct history *history) {
-    char fname[PATH_MAX];
+    char fname[PATH_MAX] = {0};
     build_path_to_hist_file(fname);
     remove(fname);
     FILE *fptr = fopen(fname, "w");

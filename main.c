@@ -73,15 +73,15 @@ static inline void quit(struct history *history) {
 
 int main() {
     // set up history
-    struct history history;
-    char *history_content[MAX_INPUT];
+    struct history history = {0};
+    char *history_content[MAX_INPUT] = {0};
     memcpy(history.hist, history_content, sizeof(history_content));
     history.length = 0;
 
     // set up prompt
     char *prompt_suffix = "-> ";
     int prompt_suffix_size = strlen(prompt_suffix);
-    char current_dir[PATH_MAX];
+    char current_dir[PATH_MAX] = {0};
 
     get_commands_history(&history);
     greet_user();
@@ -94,12 +94,13 @@ int main() {
 
         size_t prompt_size = strlen(current_dir) + prompt_suffix_size + PROMPT_BUFFER;
         char prompt[prompt_size];
+        memset(prompt, '\0', prompt_size);
 
         if (build_prompt(prompt, prompt_size, current_dir, prompt_suffix) == -1)
             printf("Couldn't build shell prompt correctly\n");
 
         printf("%s", prompt);
-        char input[MAX_INPUT];
+        char input[MAX_INPUT] = {0};
         int ret = snowshell_fgets(input, &history, prompt);
         if (ret == 0) {
             if (strcmp(input, "exit\n") == 0)

@@ -11,3 +11,10 @@ add_executable(snowshell
         inputs.c
         execute.c
 )
+
+add_compile_options(
+        -Wall 
+        -Wextra 
+        -Wuninitialized 
+        -Wmaybe-uninitialized
+)
