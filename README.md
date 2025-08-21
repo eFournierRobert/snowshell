@@ -9,4 +9,4 @@ Small and simple shell made in C.
 - [x] Commands history
 - [x] Documentation / Refactoring
 - [x] Piping
-- [ ] Clean Valgrind output
+- [x] Clean Valgrind output
