@@ -9,4 +9,5 @@ add_executable(snowshell
         dir.c
         history.c
         inputs.c
+        execute.c
 )

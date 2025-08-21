@@ -6,7 +6,6 @@
 
 #include <asm-generic/errno-base.h>
 #include <complex.h>
-#include <errno.h>
 #include <linux/limits.h>
 #include <stddef.h>
 #include <sys/wait.h>
@@ -18,7 +17,7 @@
 
 #include "history.h"
 #include "inputs.h"
-#include "dir.h"
+#include "execute.h"
 
 #define MAX_ARGS 128
 #define PROMPT_BUFFER 5
@@ -50,72 +49,6 @@ int build_prompt(char *dest, size_t destsz, char *current_dir, char *suffix) {
 }
 
 /**
- * @brief Fork and execute the given app in args with execvp.
- * 
- * @param args The app and its arguments to execute.
- *
- * @note In case of errors, it will print the information to stderr.
- */
-void execute_app(char *const args[]) {
-    pid_t pid = fork();
-    if (pid < 0) {
-        perror("fork");
-        return;
-    }
-    
-    if (pid == 0) {
-        execvp(args[0], args);
-
-        int err = errno;
-        switch (err) {
-            case ENOENT:
-                fprintf(stderr, "snowshell: %s: command not found\n", args[0]);
-                _exit(127);
-                break;
-            case EACCES:
-                fprintf(stderr, "snowshell: %s: permission denied\n", args[0]);
-                _exit(126);
-                break;
-            default:
-                fprintf(stderr, "snowshell: %s: %s\n", args[0], strerror(err));
-                _exit(126);
-                break;
-        
-        }
-    }
-
-    int status;
-    while (waitpid(pid, &status, 0) == -1) {
-        if (errno == EINTR) continue;
-        perror("waitpid");
-        break;
-    }
-}
-
-/**
- * @brief Takes the input and parses it before executing it.
- * 
- * @param input The raw user input string.
- * @param current_dir The absolute path of the current directory in case 
- *        we need to change directory (like "cd <dir>").
- */
-void input_parser(char *input, char *current_dir) {
-    wordexp_t p;
-    
-    if (wordexp(input, &p, WRDE_NOCMD) != 0)
-        return;
-
-    if (strcmp(p.we_wordv[0], "cd") == 0)
-        change_dir(p.we_wordv, p.we_wordc, current_dir);
-    else {
-        p.we_wordv[p.we_wordc] = NULL; // Terminate with NULL for execvp
-        execute_app(p.we_wordv);
-    }
-
-    wordfree(&p);
-}
-
-/**
  * @brief Prints a small hello message to the user!
  * 
  */
@@ -139,11 +72,13 @@ static inline void quit(struct history *history) {
 
 
 int main() {
+    // set up history
     struct history history;
     char *history_content[MAX_INPUT];
     memcpy(history.hist, history_content, sizeof(history_content));
     history.length = 0;
 
+    // set up prompt
     char *prompt_suffix = "-> ";
     int prompt_suffix_size = strlen(prompt_suffix);
     char current_dir[PATH_MAX];
@@ -172,7 +107,7 @@ int main() {
             else if (input[0] != '\n' && input[0] != ' ') {
                 input[strlen(input) - 1] = '\0';
                 push_to_hist(&history, input);
-                input_parser(input, current_dir);
+                parse_and_execute(input, current_dir);
             }
         }
     }
