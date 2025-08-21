@@ -8,4 +8,5 @@ Small and simple shell made in C.
 - [x] Directory navigation
 - [x] Commands history
 - [x] Documentation / Refactoring
-- [ ] Piping
+- [x] Piping
+- [ ] Clean Valgrind output
