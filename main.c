@@ -72,11 +72,13 @@ static inline void quit(struct history *history) {
 
 
 int main() {
+    // set up history
     struct history history;
     char *history_content[MAX_INPUT];
     memcpy(history.hist, history_content, sizeof(history_content));
     history.length = 0;
 
+    // set up prompt
     char *prompt_suffix = "-> ";
     int prompt_suffix_size = strlen(prompt_suffix);
     char current_dir[PATH_MAX];
