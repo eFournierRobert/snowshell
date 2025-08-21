@@ -73,9 +73,9 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
     }
     char *token = strtok(input, "|");
     pid_t pids[nb_of_pipes];
-    int k = nb_of_pipes + 1;
+    int nb_of_programs = nb_of_pipes + 1;
 
-    for(int i = 0; i < k; i++, token = strtok(NULL, "|")) {
+    for(int i = 0; i < nb_of_programs; i++, token = strtok(NULL, "|")) {
         pids[i] = fork();
         wordexp_t p;
         if (wordexp(token, &p, WRDE_NOCMD) != 0)
@@ -89,12 +89,12 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
                     perror("dup2 stdin");
             }
 
-            if (i < k - 1) {
+            if (i < nb_of_programs - 1) {
                 if (dup2(pipefd[i][1], STDOUT_FILENO) == -1)
                     perror("dup2 stdout");
             }
 
-            for (int j = 0; j < k - 1; j++) {
+            for (int j = 0; j < nb_of_programs - 1; j++) {
                 close(pipefd[j][0]);
                 close(pipefd[j][1]);
             }
@@ -111,13 +111,13 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
         wordfree(&p);
     }
 
-    for (int i = 0; i < k - 1; i++) {
+    for (int i = 0; i < nb_of_programs - 1; i++) {
         close(pipefd[i][0]);
         close(pipefd[i][1]);
     }
 
     int status;
-    for (int i = 0; i < k; i++)
+    for (int i = 0; i < nb_of_programs; i++)
         while (waitpid(pids[i], &status, 0) == -1) {}
 }
 
