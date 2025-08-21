@@ -7,6 +7,7 @@
 #include <wordexp.h>
 
 #include "dir.h"
+#include "execute.h"
 
 void execvp_error_catching(int err, char *arg0) {
     switch (err) {
@@ -62,7 +63,63 @@ void simple_parse(char *input, char *current_dir) {
     wordfree(&p);
 }
 
-void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {}
+void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
+    int pipefd[nb_of_pipes][2];
+    for (int i = 0; i < nb_of_pipes; i++) {
+        if (pipe(pipefd[i]) != 0) {
+            perror("pipe");
+            return;
+        }
+    }
+    char *token = strtok(input, "|");
+    pid_t pids[nb_of_pipes];
+    int k = nb_of_pipes + 1;
+
+    for(int i = 0; i < k; i++, token = strtok(NULL, "|")) {
+        pids[i] = fork();
+        wordexp_t p;
+        if (wordexp(token, &p, WRDE_NOCMD) != 0)
+            return;
+
+        if (pids[i] < 0)
+            perror("fork");
+        else if (pids[i] == 0) {
+            if (i > 0) {
+                if (dup2(pipefd[i - 1][0], STDIN_FILENO) == -1)
+                    perror("dup2 stdin");
+            }
+
+            if (i < k - 1) {
+                if (dup2(pipefd[i][1], STDOUT_FILENO) == -1)
+                    perror("dup2 stdout");
+            }
+
+            for (int j = 0; j < k - 1; j++) {
+                close(pipefd[j][0]);
+                close(pipefd[j][1]);
+            }
+
+            if (strcmp(p.we_wordv[0], "cd") == 0)
+                change_dir(p.we_wordv, p.we_wordc, current_dir);
+            else {
+                p.we_wordv[p.we_wordc] = NULL; // Terminate with NULL for execvp
+                execvp(p.we_wordv[0], p.we_wordv);
+                execvp_error_catching(errno, p.we_wordv[0]);
+            }
+        }
+
+        wordfree(&p);
+    }
+
+    for (int i = 0; i < k - 1; i++) {
+        close(pipefd[i][0]);
+        close(pipefd[i][1]);
+    }
+
+    int status;
+    for (int i = 0; i < k; i++)
+        while (waitpid(pids[i], &status, 0) == -1) {}
+}
 
 int get_nb_of_pipes(char *input) {
     int total_pipes = 0;
