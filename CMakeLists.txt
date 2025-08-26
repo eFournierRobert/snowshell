@@ -12,9 +12,4 @@ add_executable(snowshell
         execute.c
 )
 
-add_compile_options(
-        -Wall 
-        -Wextra 
-        -Wuninitialized 
-        -Wmaybe-uninitialized
-)
+target_compile_options(snowshell PRIVATE -Wall -Wextra -Werror -g)

@@ -156,7 +156,8 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
  */
 int get_nb_of_pipes(char *input) {
     int total_pipes = 0;
-    for (int i = 0; i < strlen(input); i++) {
+    int input_size = strlen(input);
+    for (int i = 0; i < input_size; i++) {
         if (input[i] == '|')
             total_pipes++;
     }

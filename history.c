@@ -44,7 +44,6 @@ FILE *get_hist_file_readptr() {
  */
 void get_commands_history(struct history *history) {
     char line[MAX_INPUT] = {0};
-    ssize_t read = 0;
     size_t line_len = MAX_INPUT;
     FILE *fptr = get_hist_file_readptr();
 
