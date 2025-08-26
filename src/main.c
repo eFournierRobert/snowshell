@@ -40,7 +40,7 @@ static inline void quit(struct history *history) {
 
 int main() {
     // set up history
-    struct history history = {0};
+    history_t history = {0};
     char *history_content[MAX_INPUT] = {0};
     memcpy(history.hist, history_content, sizeof(history_content));
     history.length = 0;

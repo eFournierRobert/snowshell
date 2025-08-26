@@ -38,7 +38,7 @@ void go_back_hist(char *input, int *hist_index, struct history *history,
     }
 }
 
-void go_forward_hist(char *input, int *hist_index, struct history *history,
+void go_forward_hist(char *input, int *hist_index, history_t *history,
                      int *cursor_pos, char *prompt) {
     if (*hist_index == history->length - 1) {
         remove_current_input(input);
@@ -122,7 +122,7 @@ char getch() {
     return c;
 }
 
-int snowshell_fgets(char *input, struct history *history, char *prompt) {
+int snowshell_fgets(char *input, history_t *history, char *prompt) {
     int quit = -1;
     int hist_index = history->length;
     int cursor = 0;

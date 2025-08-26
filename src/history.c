@@ -1,10 +1,11 @@
-#include "history.h"
-#include <linux/limits.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "history.h"
 
 static inline void build_path_to_hist_file(char *dest) {
     snprintf(dest, PATH_MAX, "%s/.snowshell_history", getenv("HOME"));
@@ -22,7 +23,7 @@ FILE *get_hist_file_readptr() {
     return fopen(fname, "r");
 }
 
-void get_commands_history(struct history *history) {
+void get_commands_history(history_t *history) {
     char line[MAX_INPUT] = {0};
     size_t line_len = MAX_INPUT;
     FILE *fptr = get_hist_file_readptr();
@@ -35,7 +36,7 @@ void get_commands_history(struct history *history) {
     fclose(fptr);
 }
 
-void write_hist(struct history *history) {
+void write_hist(history_t *history) {
     char fname[PATH_MAX] = {0};
     build_path_to_hist_file(fname);
     remove(fname);
@@ -48,7 +49,7 @@ void write_hist(struct history *history) {
     fclose(fptr);
 }
 
-void push_to_hist(struct history *history, char *input) {
+void push_to_hist(history_t *history, char *input) {
     if (history->length < MAX_HIST_SIZE) {
         memcpy(history->hist[history->length], input, strlen(input));
         (history->length)++;
