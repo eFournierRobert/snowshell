@@ -1,3 +1,8 @@
+/* main.c -- Snowshell main loop
+ *  
+ *  Where the main loop of the shell and some high level functions reside.
+ */
+
 #include <asm-generic/errno-base.h>
 #include <complex.h>
 #include <linux/limits.h>
@@ -16,6 +21,7 @@
 #define MAX_ARGS 128
 #define PROMPT_BUFFER 5
 
+/* Builds the shell prompt correctly then stores it inside dest.*/
 int build_prompt(char *dest, size_t destsz, char *current_dir, char *suffix) {
     if (!dest || !current_dir || !suffix || destsz == 0)
         return -1;
@@ -27,12 +33,13 @@ int build_prompt(char *dest, size_t destsz, char *current_dir, char *suffix) {
     return n;
 }
 
+/* Greets the user when opening the terminal because why not? */
 static inline void greet_user() {
     char *username = getlogin();
     printf("Hi, %s\n\n", username);
 }
-
-static inline void quit(struct history *history) {
+/* Exit cleanly the shell. Writes the history to the file then exit. */
+static inline void quit(history_t *history) {
     write_hist(history);
     printf("Bye bye! :)\n");
     exit(0);

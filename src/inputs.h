@@ -1,16 +1,14 @@
+/**
+ * @file inputs.h
+ * @brief Declaration of inputs function and enums provided by inputs to main.c
+ */
+
 #ifndef INPUTS_H
 #define INPUTS_H
 
 #ifndef HISTORY_H
 #include "history.h"
 #endif
-
-/**
- * @brief Keys that can be pressed during the getch() function.
- *
- * @note The getch() function is inside inputs.c.
- */
-enum keys { UP, DOWN, LEFT, RIGHT, CTRL_C, BACKSPACE, ENTER_KEY };
 
 /**
  * @brief The fgets function used by the shell instead of the default fgets().
