@@ -4,12 +4,8 @@ project(snowshell C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_BUILD_TYPE Debug)
 
-add_executable(snowshell 
-        main.c
-        dir.c
-        history.c
-        inputs.c
-        execute.c
-)
+file(GLOB SRC_FILES CONFIGURE_DEPENDS src/*.c)
+add_executable(snowshell ${SRC_FILES})
 
+target_include_directories(snowshell PRIVATE src)
 target_compile_options(snowshell PRIVATE -Wall -Wextra -Werror -g)
