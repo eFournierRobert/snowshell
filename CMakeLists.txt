@@ -9,3 +9,9 @@ add_executable(snowshell ${SRC_FILES})
 
 target_include_directories(snowshell PRIVATE src)
 target_compile_options(snowshell PRIVATE -Wall -Wextra -Werror -g)
+
+add_custom_target(run 
+  COMMAND snowshell
+  DEPENDS snowshell
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMENT "Builds and run snowshell")
