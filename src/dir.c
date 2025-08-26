@@ -6,18 +6,8 @@
 
 #include "dir.h"
 
-/**
- * @brief Change directory to the directory mentionned in $HOME.
- */
 void goto_home_dir() { chdir(getenv("HOME")); }
 
-/**
- * @brief Change to the given directory in args[1].
- *
- * @param args Arguments to change directory (like {"cd", "home"}).
- * @param argc The amount of arguments in @p args.
- * @param current_dir The absolute path of the current directory.
- */
 void change_dir(char *args[], int argc, char *current_dir) {
     int success;
 
