@@ -8,23 +8,23 @@
 #include <complex.h>
 #include <linux/limits.h>
 #include <stddef.h>
-#include <sys/wait.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <wordexp.h>
 
+#include "execute.h"
 #include "history.h"
 #include "inputs.h"
-#include "execute.h"
 
 #define MAX_ARGS 128
 #define PROMPT_BUFFER 5
 
 /**
  * @brief Builds a shell prompt like: "[ <current_dir> ]<suffix>".
- * 
+ *
  * @param[out] dest Output buffer for the prompt .
  * @param[in] destsz Size of @p dest in bytes (including the null terminator).
  * @param[in] current_dir Absolute or display path.
@@ -40,7 +40,7 @@
 int build_prompt(char *dest, size_t destsz, char *current_dir, char *suffix) {
     if (!dest || !current_dir || !suffix || destsz == 0)
         return -1;
-    
+
     int n = snprintf(dest, destsz, "[ %s ]%s", current_dir, suffix);
     if (n < 0 || (size_t)n >= destsz)
         return -1;
@@ -50,7 +50,7 @@ int build_prompt(char *dest, size_t destsz, char *current_dir, char *suffix) {
 
 /**
  * @brief Prints a small hello message to the user!
- * 
+ *
  */
 static inline void greet_user() {
     char *username = getlogin();
@@ -59,7 +59,7 @@ static inline void greet_user() {
 
 /**
  * @brief Handles the closing of the shell and print a nice bye message.
- * 
+ *
  * @param history The history struct that holds the current history to be saved.
  *
  * @note Calls write_hist to save history to ~/.snowshell_history.
@@ -69,7 +69,6 @@ static inline void quit(struct history *history) {
     printf("Bye bye! :)\n");
     exit(0);
 }
-
 
 int main() {
     // set up history
@@ -86,13 +85,14 @@ int main() {
     get_commands_history(&history);
     greet_user();
 
-    for(;;){
+    for (;;) {
         if (getcwd(current_dir, sizeof(current_dir)) == NULL) {
             perror("Couldn't get current directory");
             return 1;
         }
 
-        size_t prompt_size = strlen(current_dir) + prompt_suffix_size + PROMPT_BUFFER;
+        size_t prompt_size =
+            strlen(current_dir) + prompt_suffix_size + PROMPT_BUFFER;
         char prompt[prompt_size];
         memset(prompt, '\0', prompt_size);
 

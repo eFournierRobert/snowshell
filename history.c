@@ -1,14 +1,15 @@
+#include "history.h"
 #include <linux/limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "history.h"
 
 /**
- * @brief Writes the absolute path to the history file ($HOME/.snowshell_history).
- * 
+ * @brief Writes the absolute path to the history file
+ * ($HOME/.snowshell_history).
+ *
  * @param[out] dest String where to store the path.
  *
  * @note It assumes the max length of @p dest is PATH_MAX.
@@ -19,8 +20,8 @@ static inline void build_path_to_hist_file(char *dest) {
 
 /**
  * @brief Get a read FILE pointer to $HOME/.snowshell_history
- * 
- * @return FILE* 
+ *
+ * @return FILE*
  *
  * @note The FILE pointer being returned is the return of fopen();
  */
@@ -29,7 +30,7 @@ FILE *get_hist_file_readptr() {
     build_path_to_hist_file(fname);
 
     if (access(fname, F_OK) != 0) {
-        FILE * fptr = fopen(fname, "w");
+        FILE *fptr = fopen(fname, "w");
         fclose(fptr);
     }
 
@@ -39,7 +40,7 @@ FILE *get_hist_file_readptr() {
 /**
  * @brief Populate the given struct history with the commands
  *        in $HOME/.snowshell_history.
- * 
+ *
  * @param[out] history The struct history to populate.
  */
 void get_commands_history(struct history *history) {
@@ -51,15 +52,16 @@ void get_commands_history(struct history *history) {
         memcpy(history->hist[i], line, strlen(line) - 1);
         history->length++;
     }
-    
+
     fclose(fptr);
 }
 
 /**
  * @brief Deletes the history file and replaces it with a new file
  *        that has the updated history.
- * 
- * @param history The struct history with the updated history to store in the file.
+ *
+ * @param history The struct history with the updated history to store in the
+ * file.
  *
  * @note It deletes and rewrite the whole file. It does not just append to it.
  */
@@ -78,7 +80,7 @@ void write_hist(struct history *history) {
 
 /**
  * @brief Pushes the given command into the history of the given struct history.
- * 
+ *
  * @param[out] history The struct history where the commands will be stored.
  * @param[in] input The command to store.
  */
@@ -89,7 +91,8 @@ void push_to_hist(struct history *history, char *input) {
     } else {
         memset(history->hist[0], '\0', strlen(history->hist[0]));
         for (int i = 1; i < history->length; i++) {
-            memcpy(history->hist[i - 1], history->hist[i], strlen(history->hist[i]));
+            memcpy(history->hist[i - 1], history->hist[i],
+                   strlen(history->hist[i]));
             memset(history->hist[i], '\0', strlen(history->hist[i]));
         }
 

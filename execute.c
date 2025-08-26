@@ -1,9 +1,9 @@
-#include <string.h>
+#include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <errno.h>
 #include <wordexp.h>
 
 #include "dir.h"
@@ -12,31 +12,30 @@
 /**
  * @brief Gets the current errno value and checks what is the error
  *        returned by execvp().
- * 
+ *
  * @param err The current value of errno.
  * @param arg0 The program that was just ran (args[0]).
  */
 void execvp_error_catching(int err, char *arg0) {
     switch (err) {
-        case ENOENT:
-            fprintf(stderr, "snowshell: %s: command not found\n", arg0);
-            _exit(127);
-            break;
-        case EACCES:
-            fprintf(stderr, "snowshell: %s: permission denied\n", arg0);
-            _exit(126);
-            break;
-        default:
-            fprintf(stderr, "snowshell: %s: %s\n", arg0, strerror(err));
-            _exit(126);
-            break;
-    
+    case ENOENT:
+        fprintf(stderr, "snowshell: %s: command not found\n", arg0);
+        _exit(127);
+        break;
+    case EACCES:
+        fprintf(stderr, "snowshell: %s: permission denied\n", arg0);
+        _exit(126);
+        break;
+    default:
+        fprintf(stderr, "snowshell: %s: %s\n", arg0, strerror(err));
+        _exit(126);
+        break;
     }
 }
 
 /**
  * @brief Executes the given args without piping.
- * 
+ *
  * @param args The args to execute.
  */
 void simple_execute(char *const args[]) {
@@ -45,7 +44,7 @@ void simple_execute(char *const args[]) {
         perror("fork");
         return;
     }
-    
+
     if (pid == 0) {
         execvp(args[0], args);
         execvp_error_catching(errno, args[0]);
@@ -53,7 +52,8 @@ void simple_execute(char *const args[]) {
 
     int status;
     while (waitpid(pid, &status, 0) == -1) {
-        if (errno == EINTR) continue;
+        if (errno == EINTR)
+            continue;
         perror("waitpid");
         break;
     }
@@ -62,13 +62,13 @@ void simple_execute(char *const args[]) {
 /**
  * @brief Parses the input knowing it doesn't contain any pipes,
  *        then executes it.
- * 
+ *
  * @param input The current user input in the shell.
- * @param current_dir The current absolute path. 
+ * @param current_dir The current absolute path.
  */
 void simple_parse(char *input, char *current_dir) {
     wordexp_t p;
-    
+
     if (wordexp(input, &p, WRDE_NOCMD) != 0)
         return;
 
@@ -85,7 +85,7 @@ void simple_parse(char *input, char *current_dir) {
 /**
  * @brief Executes the given input with piping.
  *        It makes sure to parse it the right way too.
- * 
+ *
  * @param input The current user input in the shell.
  * @param current_dir The current absolute path.
  * @param nb_of_pipes The number of '|' in the user input.
@@ -102,7 +102,7 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
     pid_t pids[nb_of_pipes];
     int nb_of_programs = nb_of_pipes + 1;
 
-    for(int i = 0; i < nb_of_programs; i++, token = strtok(NULL, "|")) {
+    for (int i = 0; i < nb_of_programs; i++, token = strtok(NULL, "|")) {
         pids[i] = fork();
         wordexp_t p;
         if (wordexp(token, &p, WRDE_NOCMD) != 0)
@@ -145,12 +145,13 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
 
     int status;
     for (int i = 0; i < nb_of_programs; i++)
-        while (waitpid(pids[i], &status, 0) == -1) {}
+        while (waitpid(pids[i], &status, 0) == -1) {
+        }
 }
 
 /**
  * @brief Get the number of pipe character '|' in the given input.
- * 
+ *
  * @param input The input to check.
  * @return int The number of appearence of '|'.
  */
@@ -167,13 +168,13 @@ int get_nb_of_pipes(char *input) {
 
 /**
  * @brief Parses the given input then executes it.
- * 
+ *
  * @param input The user input in the shell.
  * @param current_dir The current absolute path.
  */
 void parse_and_execute(char *input, char *current_dir) {
     int nb_of_pipes = get_nb_of_pipes(input);
-    if (nb_of_pipes == 0) 
+    if (nb_of_pipes == 0)
         simple_parse(input, current_dir);
     else
         piped_parse_and_execute(input, current_dir, nb_of_pipes);
