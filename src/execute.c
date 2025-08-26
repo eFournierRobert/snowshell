@@ -1,3 +1,7 @@
+/* execute.c -- Definition of the execute function provided
+ * to main.c and its supporting functions.
+ */
+
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,6 +13,9 @@
 #include "dir.h"
 #include "execute.h"
 
+/* Takes errno and the program that made execvp not work
+ * and prints the right error message for it.
+ */
 void execvp_error_catching(int err, char *arg0) {
     switch (err) {
     case ENOENT:
@@ -26,6 +33,7 @@ void execvp_error_catching(int err, char *arg0) {
     }
 }
 
+/* Does a simple execution of a given argv. No pipes no nothing.*/
 void simple_execute(char *const args[]) {
     pid_t pid = fork();
     if (pid < 0) {
@@ -47,6 +55,9 @@ void simple_execute(char *const args[]) {
     }
 }
 
+/* Knows the given input doesn't contain any pipes so it just
+ * parses it with wordexp and then does a simple execute of it.
+ */
 void simple_parse(char *input, char *current_dir) {
     wordexp_t p;
 
@@ -63,6 +74,10 @@ void simple_parse(char *input, char *current_dir) {
     wordfree(&p);
 }
 
+/* Takes a given user input with the amount of pipes it has,
+ * splits it into subcommands and parses + executes them accordignly
+ * with the piping work around it.
+ */
 void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
     int pipefd[nb_of_pipes][2];
     for (int i = 0; i < nb_of_pipes; i++) {
@@ -122,6 +137,7 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
         }
 }
 
+/* Counts the amount of pipe characters ('|') inside the given user input.*/
 int get_nb_of_pipes(char *input) {
     int total_pipes = 0;
     int input_size = strlen(input);
@@ -133,6 +149,10 @@ int get_nb_of_pipes(char *input) {
     return total_pipes;
 }
 
+/* Takes in a user input, checks if contains pipes then gives it 
+ * to the right function for parsing+execution depending on if
+ * it contains pipes or not.
+ */
 void parse_and_execute(char *input, char *current_dir) {
     int nb_of_pipes = get_nb_of_pipes(input);
     if (nb_of_pipes == 0)

@@ -1,3 +1,9 @@
+/**
+ * @file history.h
+ * @brief Declarations of history functions and definition of the history 
+ *        struct provided to main.c.
+ */
+
 #ifndef HISTORY_H
 #define HISTORY_H
 #include <limits.h>

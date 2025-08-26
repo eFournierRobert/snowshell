@@ -1,3 +1,8 @@
+/**
+ * @file dir.h
+ * @brief Declaration of directory function provided to main.c
+ */
+
 #ifndef DIR_H
 
 /**

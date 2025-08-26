@@ -1,3 +1,8 @@
+/**
+ * @file execute.h
+ * @brief Declaration of program execution function provided to main.c
+ */
+
 #ifndef EXECUTE_H
 
 /**

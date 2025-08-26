@@ -1,5 +1,5 @@
 /* inputs.c -- Definition of the inputs function provided to 
- * main.c and it's supporting functions.
+ * main.c and its supporting functions.
  */
 
 #include <limits.h>
