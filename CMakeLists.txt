@@ -19,4 +19,12 @@ add_custom_target(run
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMENT "Builds and run snowshell")
 
-install(TARGET snowshell RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+configure_file(
+  "${CMAKE_SOURCE_DIR}/cmake_uninstall.cmake.in"
+  "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake"
+  IMMEDIATE @ONLY)
+
+add_custom_target(uninstall
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/cmake_uninstall.cmake)
+
+install(TARGETS snowshell RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
