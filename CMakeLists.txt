@@ -7,6 +7,8 @@ set(CMAKE_BUILD_TYPE Debug)
 file(GLOB SRC_FILES CONFIGURE_DEPENDS src/*.c)
 add_executable(snowshell ${SRC_FILES})
 
+add_subdirectory(doc)
+
 target_include_directories(snowshell PRIVATE src)
 target_compile_options(snowshell PRIVATE -Wall -Wextra -Werror -g)
 
