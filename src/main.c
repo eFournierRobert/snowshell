@@ -6,6 +6,7 @@
 #include <asm-generic/errno-base.h>
 #include <complex.h>
 #include <linux/limits.h>
+#include <signal.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +21,9 @@
 
 #define MAX_ARGS 128
 #define PROMPT_BUFFER 5
+
+/* Catches the signal sent to the terminal. 0 if none.*/
+volatile sig_atomic_t signal_received = 0;
 
 /* Builds the shell prompt correctly then stores it inside dest.*/
 int build_prompt(char *dest, size_t destsz, char *current_dir, char *suffix) {
@@ -41,9 +45,11 @@ static inline void greet_user() {
 /* Exit cleanly the shell. Writes the history to the file then exit. */
 static inline void quit(history_t *history) {
     write_hist(history);
-    printf("Bye bye! :)\n");
     exit(0);
 }
+
+/* Signal handler*/
+void handle_signal(int signal) { signal_received = signal; }
 
 /* Parses the command line argument given to the shell.*/
 void cli_args_parser(int argc, char **argv) {
@@ -58,20 +64,23 @@ void cli_args_parser(int argc, char **argv) {
 int main(int argc, char *argv[]) {
     cli_args_parser(argc, argv);
 
+    // set up signal handler
+    struct sigaction sa;
+    sa.sa_handler = &handle_signal;
+
     // set up history
     history_t history = {0};
     char *history_content[MAX_INPUT] = {0};
     memcpy(history.hist, history_content, sizeof(history_content));
     history.length = 0;
+    get_commands_history(&history);
 
     // set up prompt
     char *prompt_suffix = "-> ";
     int prompt_suffix_size = strlen(prompt_suffix);
     char current_dir[PATH_MAX] = {0};
 
-    get_commands_history(&history);
-
-    for (;;) {
+    while(signal_received == 0) {
         if (getcwd(current_dir, sizeof(current_dir)) == NULL) {
             perror("Couldn't get current directory");
             return 1;

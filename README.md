@@ -17,6 +17,16 @@ A release build can be compiled using (assuming you already generated the Makefi
 cd build && cmake --build . --config Release
 ```
 
+Shell and man pages can be installed using:
+```bash
+sudo cd build && cmake --install . --config Release
+```
+
+Then it can be uninstalled using:
+```bash
+sudo cd build && cmake --build . --target uninstall
+```
+
 ## Current features
 Snowshell currently supports basic things you would expect from
 a rudimentary shell like:
@@ -28,8 +38,6 @@ a rudimentary shell like:
 Small demo:
 ```bash
 $ ./snowshell 
-Hi, elliott
-
 [ /home/elliott/Documents/snowshell/build ]-> cd
 [ /home/elliott ]-> mkdir test
 [ /home/elliott ]-> cd test
@@ -37,7 +45,6 @@ Hi, elliott
 [ /home/elliott/test ]-> python test.py
 Hello World!
 [ /home/elliott/test ]-> exit
-Bye bye! :)
 ```
 
 Pipe demo:
