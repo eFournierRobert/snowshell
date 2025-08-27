@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 4.0)
 project(snowshell C)
+include(GNUInstallDirs)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_BUILD_TYPE Debug)
@@ -17,3 +18,5 @@ add_custom_target(run
   DEPENDS snowshell
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMENT "Builds and run snowshell")
+
+install(TARGET snowshell RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
