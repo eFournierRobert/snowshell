@@ -34,6 +34,10 @@ void execvp_error_catching(int err, char *arg0) {
     }
 }
 
+static inline int contains_builtins(wordexp_t *p) {
+    return strcmp(p->we_wordv[0], "cd") == 0 || strcmp(p->we_wordv[0], "history") == 0;
+}
+
 /* Does a simple execution of a given argv. No pipes no nothing.*/
 void simple_execute(char *const args[]) {
     pid_t pid = fork();
@@ -56,6 +60,13 @@ void simple_execute(char *const args[]) {
     }
 }
 
+void execute_builtin(wordexp_t *p, char *current_dir, history_t *history) {
+    if (strcmp(p->we_wordv[0], "cd") == 0)
+        change_dir(p->we_wordv, p->we_wordc, current_dir);
+    else if (strcmp(p->we_wordv[0], "history") == 0)
+        print_history(history);
+}
+
 /* Knows the given input doesn't contain any pipes so it just
  * parses it with wordexp and then does a simple execute of it.
  */
@@ -65,10 +76,8 @@ void simple_parse(char *input, char *current_dir, history_t *history) {
     if (wordexp(input, &p, WRDE_NOCMD) != 0)
         return;
 
-    if (strcmp(p.we_wordv[0], "cd") == 0)
-        change_dir(p.we_wordv, p.we_wordc, current_dir);
-    else if (strcmp(p.we_wordv[0], "history") == 0)
-        print_history(history);
+    if (contains_builtins(&p) == 1)
+        execute_builtin(&p, current_dir, history);
     else {
         p.we_wordv[p.we_wordc] = NULL; // Terminate with NULL for execvp
         simple_execute(p.we_wordv);
@@ -81,7 +90,7 @@ void simple_parse(char *input, char *current_dir, history_t *history) {
  * splits it into subcommands and parses + executes them accordignly
  * with the piping work around it.
  */
-void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
+void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes, history_t *history) {
     int pipefd[nb_of_pipes][2];
     for (int i = 0; i < nb_of_pipes; i++) {
         if (pipe(pipefd[i]) != 0) {
@@ -117,8 +126,8 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
                 close(pipefd[j][1]);
             }
 
-            if (strcmp(p.we_wordv[0], "cd") == 0)
-                change_dir(p.we_wordv, p.we_wordc, current_dir);
+            if (contains_builtins(&p) == 0)
+                execute_builtin(&p, current_dir, history);
             else {
                 p.we_wordv[p.we_wordc] = NULL; // Terminate with NULL for execvp
                 execvp(p.we_wordv[0], p.we_wordv);
@@ -161,5 +170,5 @@ void parse_and_execute(char *input, char *current_dir, history_t *history) {
     if (nb_of_pipes == 0)
         simple_parse(input, current_dir, history);
     else
-        piped_parse_and_execute(input, current_dir, nb_of_pipes);
+        piped_parse_and_execute(input, current_dir, nb_of_pipes, history);
 }
