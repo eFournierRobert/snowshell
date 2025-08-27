@@ -1,4 +1,4 @@
-/* inputs.c -- Definition of the inputs function provided to 
+/* inputs.c -- Definition of the inputs function provided to
  * main.c and its supporting functions.
  */
 
@@ -18,7 +18,7 @@ enum keys { UP, DOWN, LEFT, RIGHT, CTRL_C, BACKSPACE, ENTER_KEY };
 /* Needed to mess around with terminal raw mode.*/
 struct termios orig_termios;
 
-/* Removes the current input from stdout. Assumes that oldinput is 
+/* Removes the current input from stdout. Assumes that oldinput is
  * what is currently on the screen.
  */
 void remove_current_input(char *oldinput) {
@@ -155,8 +155,8 @@ char getch() {
     return c;
 }
 
-/* The snowshell fgets itself. Will loop inside until it quits (CTRL_C or ENTER) or
- * the current input length becomes equals to MAX_INPUT.
+/* The snowshell fgets itself. Will loop inside until it quits (CTRL_C or ENTER)
+ * or the current input length becomes equals to MAX_INPUT.
  */
 int snowshell_fgets(char *input, history_t *history, char *prompt) {
     int quit = -1;

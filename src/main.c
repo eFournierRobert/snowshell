@@ -1,5 +1,5 @@
 /* main.c -- Snowshell main loop
- *  
+ *
  *  Where the main loop of the shell and some high level functions reside.
  */
 
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
     int prompt_suffix_size = strlen(prompt_suffix);
     char current_dir[PATH_MAX] = {0};
 
-    while(signal_received == 0) {
+    while (signal_received == 0) {
         if (getcwd(current_dir, sizeof(current_dir)) == NULL) {
             perror("Couldn't get current directory");
             return 1;

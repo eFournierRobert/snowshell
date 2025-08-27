@@ -10,7 +10,7 @@
 
 #include "history.h"
 
-/* Build the absolute path to ~/.snowshell_history file and 
+/* Build the absolute path to ~/.snowshell_history file and
  * stores it in dest.
  */
 static inline void build_path_to_hist_file(char *dest) {

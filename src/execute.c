@@ -11,8 +11,8 @@
 #include <wordexp.h>
 
 #include "dir.h"
-#include "history.h"
 #include "execute.h"
+#include "history.h"
 
 /* Takes errno and the program that made execvp not work
  * and prints the right error message for it.
@@ -34,11 +34,12 @@ void execvp_error_catching(int err, char *arg0) {
     }
 }
 
-/* Checks if the current input given to wordexp_t is a builtin. 
+/* Checks if the current input given to wordexp_t is a builtin.
  * Returns 1 if it is.
  */
 static inline int contains_builtins(wordexp_t *p) {
-    return strcmp(p->we_wordv[0], "cd") == 0 || strcmp(p->we_wordv[0], "history") == 0;
+    return strcmp(p->we_wordv[0], "cd") == 0 ||
+           strcmp(p->we_wordv[0], "history") == 0;
 }
 
 /* Does a simple execution of a given argv. No pipes no nothing.*/
@@ -94,7 +95,8 @@ void simple_parse(char *input, char *current_dir, history_t *history) {
  * splits it into subcommands and parses + executes them accordignly
  * with the piping work around it.
  */
-void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes, history_t *history) {
+void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes,
+                             history_t *history) {
     int pipefd[nb_of_pipes][2];
     for (int i = 0; i < nb_of_pipes; i++) {
         if (pipe(pipefd[i]) != 0) {
@@ -165,7 +167,7 @@ int get_nb_of_pipes(char *input) {
     return total_pipes;
 }
 
-/* Takes in a user input, checks if contains pipes then gives it 
+/* Takes in a user input, checks if contains pipes then gives it
  * to the right function for parsing+execution depending on if
  * it contains pipes or not.
  */
