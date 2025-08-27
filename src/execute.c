@@ -1,3 +1,7 @@
+/* execute.c -- Definition of the execute function provided
+ * to main.c and its supporting functions.
+ */
+
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,13 +12,10 @@
 
 #include "dir.h"
 #include "execute.h"
+#include "history.h"
 
-/**
- * @brief Gets the current errno value and checks what is the error
- *        returned by execvp().
- *
- * @param err The current value of errno.
- * @param arg0 The program that was just ran (args[0]).
+/* Takes errno and the program that made execvp not work
+ * and prints the right error message for it.
  */
 void execvp_error_catching(int err, char *arg0) {
     switch (err) {
@@ -33,11 +34,15 @@ void execvp_error_catching(int err, char *arg0) {
     }
 }
 
-/**
- * @brief Executes the given args without piping.
- *
- * @param args The args to execute.
+/* Checks if the current input given to wordexp_t is a builtin.
+ * Returns 1 if it is.
  */
+static inline int contains_builtins(wordexp_t *p) {
+    return strcmp(p->we_wordv[0], "cd") == 0 ||
+           strcmp(p->we_wordv[0], "history") == 0;
+}
+
+/* Does a simple execution of a given argv. No pipes no nothing.*/
 void simple_execute(char *const args[]) {
     pid_t pid = fork();
     if (pid < 0) {
@@ -59,21 +64,25 @@ void simple_execute(char *const args[]) {
     }
 }
 
-/**
- * @brief Parses the input knowing it doesn't contain any pipes,
- *        then executes it.
- *
- * @param input The current user input in the shell.
- * @param current_dir The current absolute path.
+/* Takes care of executing builtins commands.*/
+void execute_builtin(wordexp_t *p, char *current_dir, history_t *history) {
+    if (strcmp(p->we_wordv[0], "cd") == 0)
+        change_dir(p->we_wordv, p->we_wordc, current_dir);
+    else if (strcmp(p->we_wordv[0], "history") == 0)
+        print_history(history);
+}
+
+/* Knows the given input doesn't contain any pipes so it just
+ * parses it with wordexp and then does a simple execute of it.
  */
-void simple_parse(char *input, char *current_dir) {
+void simple_parse(char *input, char *current_dir, history_t *history) {
     wordexp_t p;
 
     if (wordexp(input, &p, WRDE_NOCMD) != 0)
         return;
 
-    if (strcmp(p.we_wordv[0], "cd") == 0)
-        change_dir(p.we_wordv, p.we_wordc, current_dir);
+    if (contains_builtins(&p) == 1)
+        execute_builtin(&p, current_dir, history);
     else {
         p.we_wordv[p.we_wordc] = NULL; // Terminate with NULL for execvp
         simple_execute(p.we_wordv);
@@ -82,15 +91,12 @@ void simple_parse(char *input, char *current_dir) {
     wordfree(&p);
 }
 
-/**
- * @brief Executes the given input with piping.
- *        It makes sure to parse it the right way too.
- *
- * @param input The current user input in the shell.
- * @param current_dir The current absolute path.
- * @param nb_of_pipes The number of '|' in the user input.
+/* Takes a given user input with the amount of pipes it has,
+ * splits it into subcommands and parses + executes them accordignly
+ * with the piping work around it.
  */
-void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
+void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes,
+                             history_t *history) {
     int pipefd[nb_of_pipes][2];
     for (int i = 0; i < nb_of_pipes; i++) {
         if (pipe(pipefd[i]) != 0) {
@@ -126,8 +132,8 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
                 close(pipefd[j][1]);
             }
 
-            if (strcmp(p.we_wordv[0], "cd") == 0)
-                change_dir(p.we_wordv, p.we_wordc, current_dir);
+            if (contains_builtins(&p) == 0)
+                execute_builtin(&p, current_dir, history);
             else {
                 p.we_wordv[p.we_wordc] = NULL; // Terminate with NULL for execvp
                 execvp(p.we_wordv[0], p.we_wordv);
@@ -149,12 +155,7 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes) {
         }
 }
 
-/**
- * @brief Get the number of pipe character '|' in the given input.
- *
- * @param input The input to check.
- * @return int The number of appearence of '|'.
- */
+/* Counts the amount of pipe characters ('|') inside the given user input.*/
 int get_nb_of_pipes(char *input) {
     int total_pipes = 0;
     int input_size = strlen(input);
@@ -166,16 +167,14 @@ int get_nb_of_pipes(char *input) {
     return total_pipes;
 }
 
-/**
- * @brief Parses the given input then executes it.
- *
- * @param input The user input in the shell.
- * @param current_dir The current absolute path.
+/* Takes in a user input, checks if contains pipes then gives it
+ * to the right function for parsing+execution depending on if
+ * it contains pipes or not.
  */
-void parse_and_execute(char *input, char *current_dir) {
+void parse_and_execute(char *input, char *current_dir, history_t *history) {
     int nb_of_pipes = get_nb_of_pipes(input);
     if (nb_of_pipes == 0)
-        simple_parse(input, current_dir);
+        simple_parse(input, current_dir, history);
     else
-        piped_parse_and_execute(input, current_dir, nb_of_pipes);
+        piped_parse_and_execute(input, current_dir, nb_of_pipes, history);
 }

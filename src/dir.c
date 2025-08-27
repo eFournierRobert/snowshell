@@ -1,3 +1,7 @@
+/* dir.c -- Definition of the directory function provided
+ * to main.c and its supporting functions.
+ */
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,17 +10,11 @@
 
 #include "dir.h"
 
-/**
- * @brief Change directory to the directory mentionned in $HOME.
- */
+/* Goes to the directory specified in the environment variable $HOME.*/
 void goto_home_dir() { chdir(getenv("HOME")); }
 
-/**
- * @brief Change to the given directory in args[1].
- *
- * @param args Arguments to change directory (like {"cd", "home"}).
- * @param argc The amount of arguments in @p args.
- * @param current_dir The absolute path of the current directory.
+/* Changes the directory to the one given to cd in argv. Prints
+ * an error message if it doesn't work.
  */
 void change_dir(char *args[], int argc, char *current_dir) {
     int success;

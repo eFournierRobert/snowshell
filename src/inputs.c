@@ -1,4 +1,8 @@
-#include <linux/limits.h>
+/* inputs.c -- Definition of the inputs function provided to
+ * main.c and its supporting functions.
+ */
+
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,12 +12,14 @@
 #include "history.h"
 #include "inputs.h"
 
+/* Enum of keys that can be returned by getch() if not a char.*/
+enum keys { UP, DOWN, LEFT, RIGHT, CTRL_C, BACKSPACE, ENTER_KEY };
+
+/* Needed to mess around with terminal raw mode.*/
 struct termios orig_termios;
 
-/**
- * @brief Reset the current input and removes it from stdout.
- *
- * @param oldinput The input to reset. Memsets it to '\0'.
+/* Removes the current input from stdout. Assumes that oldinput is
+ * what is currently on the screen.
  */
 void remove_current_input(char *oldinput) {
     printf("\r\033[K");
@@ -21,16 +27,9 @@ void remove_current_input(char *oldinput) {
     memset(oldinput, '\0', strlen(oldinput));
 }
 
-/**
- * @brief Removes the input currently written on stdout and rewrites it.
- *
- * @param input The current updated input.
- * @param cursor The position of the cursor in input.
- * @param len The length of the current input.
- * @param prompt The shell prompt so that it can be written to stdout.
- *
- * @note The shell prompt gets flushed out too. This is why it is
- *       in the parameters to get rewritten.
+/* Redraws the given input to the screen while placing the cursor
+ * at the right position on the screen. Needs the prompt because it
+ * completely rewrite the line on the screen.
  */
 void redraw_line(char *input, int cursor, int len, char *prompt) {
     printf("\r\033[K");
@@ -42,19 +41,11 @@ void redraw_line(char *input, int cursor, int len, char *prompt) {
     fflush(stdout);
 }
 
-/**
- * @brief Removes the current output, changes the input variable to the last
- *        value (hist_index - 1) in the given history struct then rewrites it to
- * stdout.
- *
- * @param[out] input The input to be overwritten with the new history value.
- * @param hist_index The current index in history.
- * @param history The struct history that contains the current loaded history.
- * @param[out] cursor_pos The current cursor position. To be moved at the end of
- * the new input.
- * @param prompt The shell prompt to be rewritten to stdout with the new input.
+/* Takes a given history and the current index inside it, then rewrites
+ * input and what is on the screen with the command stored at hist_index - 1.
+ * Updates hist_index along the way.
  */
-void go_back_hist(char *input, int *hist_index, struct history *history,
+void go_back_hist(char *input, int *hist_index, history_t *history,
                   int *cursor_pos, char *prompt) {
     if (*hist_index > 0) {
         remove_current_input(input);
@@ -66,19 +57,11 @@ void go_back_hist(char *input, int *hist_index, struct history *history,
     }
 }
 
-/**
- * @brief Removes the current output, changes the input variable to the next
- *        value (hist_index + 1) in the given history struct then rewrites it to
- * stdout.
- *
- * @param[out] input The input to be overwritten with the new history value.
- * @param hist_index The current index in history.
- * @param history The struct history that contains the current loaded history.
- * @param[out] cursor_pos The current cursor position. To be moved at the end of
- * the new input.
- * @param prompt The shell prompt to be rewritten to stdout with the new input.
+/* Takes a given history and the current index inside it, then rewrites
+ * input and what is on the screen with the command stored at hist_index + 1.
+ * Updates hist_index along the way.
  */
-void go_forward_hist(char *input, int *hist_index, struct history *history,
+void go_forward_hist(char *input, int *hist_index, history_t *history,
                      int *cursor_pos, char *prompt) {
     if (*hist_index == history->length - 1) {
         remove_current_input(input);
@@ -95,11 +78,8 @@ void go_forward_hist(char *input, int *hist_index, struct history *history,
     }
 }
 
-/**
- * @brief Moves the cursor left and printf the ANSI sequence to moves
- *         the cursor to the left too.
- *
- * @param cursor_pos The current cursor position.
+/* Moves the cursor left and updates the given cursor_pos.
+ * Will check cursor_pos as to not go to far left.
  */
 void move_cursor_left(int *cursor_pos) {
     if (*cursor_pos > 0) {
@@ -107,13 +87,8 @@ void move_cursor_left(int *cursor_pos) {
         printf("\033[D");
     }
 }
-
-/**
- * @brief Moves the cursor right and printf the ANSI sequence to moves
- *         the cursor to the right too.
- *
- * @param cursor_pos The current cursor position.
- * @param current_input_size The size of the current input.
+/* Moves the cursor right and updates the given cursor_pos. Takes
+ * the current input size as to not go to far to the right.
  */
 void move_cursor_right(int *cursor_pos, int current_input_size) {
     if (*cursor_pos < current_input_size) {
@@ -122,16 +97,10 @@ void move_cursor_right(int *cursor_pos, int current_input_size) {
     }
 }
 
-/**
- * @brief Disables termios raw mode.
- *
- */
+/* Disables termios raw mode.*/
 void disable_raw_mode() { tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios); }
 
-/**
- * @brief Enables termios raw mode.
- *
- */
+/* Enable termios raw mode.*/
 void enable_raw_mode() {
     tcgetattr(STDIN_FILENO, &orig_termios);
     atexit(disable_raw_mode);
@@ -142,15 +111,8 @@ void enable_raw_mode() {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
-/**
- * @brief My own getch (get char) function.
- *
- * @return char The char that was input or the key that was pressed.
- *
- * @note This puts the terminal in raw mode using termios, then puts it back
- *       in normal mode when it has gotten the new character.
- * @note Some keys are made to be returned instead of characters if pressed.
- *       They are mapped inside the keys enum in inputs.h.
+/* My own version of what I saw Windows getch() was. Will return
+ * either a char or a value from the keys enum.
  */
 char getch() {
     enable_raw_mode();
@@ -193,18 +155,10 @@ char getch() {
     return c;
 }
 
-/**
- * @brief The main fgets() function used by the shell. It is my own little
- * implementation.
- *
- * @param[out] input The destination variable of the input.
- * @param[in] history The loaded history.
- * @param[in] prompt The current shell prompt.
- * @return int Returns 0 if it was exited with ENTER or 1 if CTRL-C.
- *
- * @warning **It assumed input is an char array of size MAX_INPUT.**
+/* The snowshell fgets itself. Will loop inside until it quits (CTRL_C or ENTER)
+ * or the current input length becomes equals to MAX_INPUT.
  */
-int snowshell_fgets(char *input, struct history *history, char *prompt) {
+int snowshell_fgets(char *input, history_t *history, char *prompt) {
     int quit = -1;
     int hist_index = history->length;
     int cursor = 0;
@@ -248,7 +202,7 @@ int snowshell_fgets(char *input, struct history *history, char *prompt) {
         case RIGHT:
             move_cursor_right(&cursor, input_length);
             break;
-        default:
+        default: // getch returned a char.
             if (input_length < MAX_INPUT) {
                 if (cursor < input_length) {
                     memmove(&input[cursor + 1], &input[cursor],
