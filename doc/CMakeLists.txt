@@ -21,7 +21,7 @@ set(GENERATED_MANPAGES)
 
 foreach(src ${MAN_MD_SOURCES})
   get_filename_component(fname "${src}" NAME)      # snowshell.1.md
-  get_filename_component(name_we "${src}" NAME_WE) # snowshell.1
+  string(REGEX REPLACE "\\.md$" "" name_we "${fname}")
   string(REGEX REPLACE ".*\\.([0-9]+)\\.md$" "\\1" section "${fname}")
 
   if(NOT section MATCHES "^[0-9]+$")
