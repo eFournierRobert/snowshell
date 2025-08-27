@@ -12,7 +12,7 @@ You can run this command and it will compile the project and run it:
 mkdir build && cd build && cmake .. && cmake --build . --target run
 ```
 
-A release build can be compiled using:
+A release build can be compiled using (assuming you already generated the Makefile):
 ```bash
 cd build && cmake --build . --config Release
 ```
