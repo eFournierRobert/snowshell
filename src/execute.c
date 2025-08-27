@@ -34,6 +34,9 @@ void execvp_error_catching(int err, char *arg0) {
     }
 }
 
+/* Checks if the current input given to wordexp_t is a builtin. 
+ * Returns 1 if it is.
+ */
 static inline int contains_builtins(wordexp_t *p) {
     return strcmp(p->we_wordv[0], "cd") == 0 || strcmp(p->we_wordv[0], "history") == 0;
 }
@@ -60,6 +63,7 @@ void simple_execute(char *const args[]) {
     }
 }
 
+/* Takes care of executing builtins commands.*/
 void execute_builtin(wordexp_t *p, char *current_dir, history_t *history) {
     if (strcmp(p->we_wordv[0], "cd") == 0)
         change_dir(p->we_wordv, p->we_wordc, current_dir);

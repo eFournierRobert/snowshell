@@ -44,6 +44,11 @@ void write_hist(history_t *history);
  */
 void push_to_hist(history_t *history, char *input);
 
+/**
+ * @brief Prints the given command history along with its index to stdout.
+ * 
+ * @param history The current command history.
+ */
 void print_history(history_t *history);
 
 #endif
