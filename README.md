@@ -19,12 +19,12 @@ cd build && cmake --build . --config Release
 
 Shell and man pages can be installed using:
 ```bash
-sudo cd build && cmake --install . --config Release
+sudo ./install.sh
 ```
 
 Then it can be uninstalled using:
 ```bash
-sudo cd build && cmake --build . --target uninstall
+sudo ./uninstall.sh
 ```
 
 ## Current features
