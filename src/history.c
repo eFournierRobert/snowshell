@@ -82,3 +82,8 @@ void push_to_hist(history_t *history, char *input) {
         memcpy(history->hist[history->length], input, strlen(input));
     }
 }
+
+void print_history(history_t *history) {
+    for (int i = 0; i < history->length; i++)
+        printf("%d %s\n", i + 1, history->hist[i]);
+}

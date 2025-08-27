@@ -11,6 +11,7 @@
 #include <wordexp.h>
 
 #include "dir.h"
+#include "history.h"
 #include "execute.h"
 
 /* Takes errno and the program that made execvp not work
@@ -58,7 +59,7 @@ void simple_execute(char *const args[]) {
 /* Knows the given input doesn't contain any pipes so it just
  * parses it with wordexp and then does a simple execute of it.
  */
-void simple_parse(char *input, char *current_dir) {
+void simple_parse(char *input, char *current_dir, history_t *history) {
     wordexp_t p;
 
     if (wordexp(input, &p, WRDE_NOCMD) != 0)
@@ -66,6 +67,8 @@ void simple_parse(char *input, char *current_dir) {
 
     if (strcmp(p.we_wordv[0], "cd") == 0)
         change_dir(p.we_wordv, p.we_wordc, current_dir);
+    else if (strcmp(p.we_wordv[0], "history") == 0)
+        print_history(history);
     else {
         p.we_wordv[p.we_wordc] = NULL; // Terminate with NULL for execvp
         simple_execute(p.we_wordv);
@@ -153,10 +156,10 @@ int get_nb_of_pipes(char *input) {
  * to the right function for parsing+execution depending on if
  * it contains pipes or not.
  */
-void parse_and_execute(char *input, char *current_dir) {
+void parse_and_execute(char *input, char *current_dir, history_t *history) {
     int nb_of_pipes = get_nb_of_pipes(input);
     if (nb_of_pipes == 0)
-        simple_parse(input, current_dir);
+        simple_parse(input, current_dir, history);
     else
         piped_parse_and_execute(input, current_dir, nb_of_pipes);
 }

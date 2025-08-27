@@ -44,4 +44,6 @@ void write_hist(history_t *history);
  */
 void push_to_hist(history_t *history, char *input);
 
+void print_history(history_t *history);
+
 #endif
