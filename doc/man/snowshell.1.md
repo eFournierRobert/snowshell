@@ -14,6 +14,9 @@ snowshell - minimal toy shell
 ## SYNOPSIS
 **snowshell** [options]
 
+**\--greet**\
+&nbsp;&nbsp;&nbsp;&nbsp;Greets the user on startup.
+
 ## COPYRIGHT
 snowshell is under MIT license. Check the repository on GitHub.
 

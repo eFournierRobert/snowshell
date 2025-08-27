@@ -45,7 +45,19 @@ static inline void quit(history_t *history) {
     exit(0);
 }
 
-int main() {
+/* Parses the command line argument given to the shell.*/
+void cli_args_parser(int argc, char **argv) {
+    if (argc > 0) {
+        for (int i = 0; i < argc; i++) {
+            if (strcmp(argv[i], "--greet") == 0)
+                greet_user();
+        }
+    }
+}
+
+int main(int argc, char *argv[]) {
+    cli_args_parser(argc, argv);
+
     // set up history
     history_t history = {0};
     char *history_content[MAX_INPUT] = {0};
@@ -58,7 +70,6 @@ int main() {
     char current_dir[PATH_MAX] = {0};
 
     get_commands_history(&history);
-    greet_user();
 
     for (;;) {
         if (getcwd(current_dir, sizeof(current_dir)) == NULL) {
