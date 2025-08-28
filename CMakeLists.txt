@@ -31,3 +31,8 @@ if(NOT TARGET uninstall)
 endif()
 
 install(TARGETS snowshell RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+include(CTest)
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()
