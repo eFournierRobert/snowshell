@@ -53,4 +53,8 @@ void push_to_hist(history_t *history, char *input);
  */
 void print_history(history_t *history);
 
+#ifdef TESTING
+    FILE *get_hist_file_readptr();
+#endif
+
 #endif

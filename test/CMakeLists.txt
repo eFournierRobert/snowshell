@@ -11,7 +11,8 @@ foreach(src ${TEST_SOURCES})
   get_filename_component(test_name "${src}" NAME_WE)
   add_executable(${test_name}
       "${src}"
-      ${SRC_DIR}/dir.c)
+      ${SRC_DIR}/dir.c
+      ${SRC_DIR}/history.c)
   if(TARGET Criterion::Criterion)
     target_link_libraries(${test_name} PRIVATE Criterion::Criterion)
   else()
