@@ -26,7 +26,7 @@ typedef struct history {
  *
  * @param history The history_t where to store the data.
  */
-void get_commands_history(history_t *history);
+void get_commands_history(history_t *history, char *hist_file_path);
 
 /**
  * @brief Writes the content of the history struct to ~/.snowshell_history.
@@ -36,7 +36,7 @@ void get_commands_history(history_t *history);
  * @warning This functions deletes ~/.snowshell_history and rewrites in
  * completely.
  */
-void write_hist(history_t *history);
+void write_hist(history_t *history, char *hist_file_path);
 
 /**
  * @brief Push the given input to the given history struct.
@@ -54,7 +54,7 @@ void push_to_hist(history_t *history, char *input);
 void print_history(history_t *history);
 
 #ifdef TESTING
-    FILE *get_hist_file_readptr();
+    FILE *get_hist_file_readptr(char *);
 #endif
 
 #endif

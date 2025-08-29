@@ -44,7 +44,7 @@ static inline void greet_user() {
 }
 /* Exit cleanly the shell. Writes the history to the file then exit. */
 static inline void quit(history_t *history) {
-    write_hist(history);
+    write_hist(history, NULL);
     exit(0);
 }
 
@@ -69,11 +69,8 @@ int main(int argc, char *argv[]) {
     sa.sa_handler = &handle_signal;
 
     // set up history
-    history_t history = {0};
-    char *history_content[MAX_INPUT] = {0};
-    memcpy(history.hist, history_content, sizeof(history_content));
-    history.length = 0;
-    get_commands_history(&history);
+    history_t history = (history_t) {0};
+    get_commands_history(&history, NULL);
 
     // set up prompt
     char *prompt_suffix = "-> ";

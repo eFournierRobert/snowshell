@@ -2,6 +2,7 @@
  * to main.c and its supporting functions.
  */
 #include <limits.h>
+#include <linux/limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,35 +11,35 @@
 
 #include "history.h"
 
-/* Build the absolute path to ~/.snowshell_history file and
- * stores it in dest.
- */
-static inline void build_path_to_hist_file(char *dest) {
-    snprintf(dest, PATH_MAX, "%s/.snowshell_history", getenv("HOME"));
-}
-
 /* Returns a file pointer to the history file. if the file
  * does not exist, it will be created by this function.
  */
-FILE *get_hist_file_readptr() {
-    char fname[PATH_MAX] = {0};
-    build_path_to_hist_file(fname);
-
-    if (access(fname, F_OK) != 0) {
-        FILE *fptr = fopen(fname, "w");
+FILE *get_hist_file_readptr(char *hist_file_path) {
+    if (access(hist_file_path, F_OK) != 0) {
+        FILE *fptr = fopen(hist_file_path, "w");
         fclose(fptr);
     }
 
-    return fopen(fname, "r");
+    return fopen(hist_file_path, "r");
 }
 
 /* Initialize the given history_t struct with the commands
  * stored inside the history file and how many there is in length.
  */
-void get_commands_history(history_t *history) {
+void get_commands_history(history_t *history, char *hist_file_path) {
+    int file_path_on_heap = 0;
+    if (hist_file_path == NULL) {
+        hist_file_path = calloc(sizeof(char), PATH_MAX);
+        
+        if (hist_file_path == NULL) { exit(1); }
+
+        file_path_on_heap = 1;
+        snprintf(hist_file_path, PATH_MAX, "%s/.snowshell_history", getenv("HOME"));
+    }
+
     char line[MAX_INPUT] = {0};
     size_t line_len = MAX_INPUT;
-    FILE *fptr = get_hist_file_readptr();
+    FILE *fptr = get_hist_file_readptr(hist_file_path);
 
     for (int i = 0; fgets(line, line_len, fptr); i++) {
         memcpy(history->hist[i], line, strlen(line) - 1);
@@ -46,22 +47,34 @@ void get_commands_history(history_t *history) {
     }
 
     fclose(fptr);
+    if (file_path_on_heap == 1)
+        free(hist_file_path);
 }
 
 /* Deletes ~/.snowshell_history and remakes it with the command
  * history inside the given history_t struct.
  */
-void write_hist(history_t *history) {
-    char fname[PATH_MAX] = {0};
-    build_path_to_hist_file(fname);
-    remove(fname);
-    FILE *fptr = fopen(fname, "w");
+void write_hist(history_t *history, char *hist_file_path) {
+    int file_path_on_heap = 0;
+    if (hist_file_path == NULL) {
+        hist_file_path = calloc(sizeof(char), PATH_MAX);
+        
+        if (hist_file_path == NULL) { exit(1); }
+
+        file_path_on_heap = 1;
+        snprintf(hist_file_path, PATH_MAX, "%s/.snowshell_history", getenv("HOME"));
+    }
+
+    remove(hist_file_path);
+    FILE *fptr = fopen(hist_file_path, "w");
 
     for (int i = 0; i < history->length; i++) {
         fprintf(fptr, "%s\n", history->hist[i]);
     }
 
     fclose(fptr);
+    if (file_path_on_heap == 1)
+        free(hist_file_path);
 }
 
 /* Pushes the given user input at the end of the given history_t struct
