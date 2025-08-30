@@ -65,7 +65,6 @@ void write_hist(history_t *history, char *hist_file_path) {
         snprintf(hist_file_path, PATH_MAX, "%s/.snowshell_history", getenv("HOME"));
     }
 
-    remove(hist_file_path);
     FILE *fptr = fopen(hist_file_path, "w");
 
     for (int i = 0; i < history->length; i++) {
