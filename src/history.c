@@ -91,7 +91,7 @@ void push_to_hist(history_t *history, char *input) {
             memset(history->hist[i], '\0', strlen(history->hist[i]));
         }
 
-        memcpy(history->hist[history->length], input, strlen(input));
+        memcpy(history->hist[history->length - 1], input, strlen(input));
     }
 }
 

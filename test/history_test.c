@@ -157,3 +157,49 @@ Test(history_test_suite, write_full_history_to_file, .init=setup, .fini=teardown
 
     fclose(fptr);
 }
+
+Test(history_test_suite, push_to_not_full_hist, .init=setup, .fini=teardown) {
+    int str_length = MAX_INPUT;
+    
+    history_t hist_struct = (history_t) {0};
+    gen_hist_path();
+
+    for (int i = 0; i < 100; i++) {
+        char str[str_length];
+        snprintf(str, str_length, "Command: %d", i);
+        memcpy(hist_struct.hist[i], str, str_length);
+
+        hist_struct.length++;
+    }
+
+    char expected[MAX_INPUT];
+    strncpy(expected, "expected input", MAX_INPUT);
+
+    push_to_hist(&hist_struct, expected);
+
+    char *received = hist_struct.hist[hist_struct.length - 1];
+    cr_assert_str_eq(received, expected, "Last stored input was not equal to the last input\nExpected: %s\nGot: %s", expected, received);
+}
+
+Test(history_test_suite, push_to_full_hist, .init=setup, .fini=teardown) {
+    int str_length = MAX_INPUT;
+    
+    history_t hist_struct = (history_t) {0};
+    gen_hist_path();
+
+    for (int i = 0; i < MAX_HIST_SIZE; i++) {
+        char str[str_length];
+        snprintf(str, str_length, "Command: %d", i);
+        push_to_hist(&hist_struct, str);
+    }
+    cr_assert_eq(MAX_HIST_SIZE, hist_struct.length);
+
+    char expected[MAX_INPUT];
+    strncpy(expected, "expected input", MAX_INPUT);
+
+    push_to_hist(&hist_struct, expected);
+
+    char *received = hist_struct.hist[hist_struct.length - 1];
+    cr_assert_str_eq(received, expected, "Last stored input was not equal to the last input\nExpected: %s\nGot: %s", expected, received);
+    cr_assert_str_eq("Command: 1", hist_struct.hist[0], "Commands where not or where badly shifted.\nExpected first command: Command 1\nGot: %s", hist_struct.hist[0]);
+}
