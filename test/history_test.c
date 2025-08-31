@@ -237,7 +237,7 @@ Test(history_test_suite, push_to_full_hist, .init = setup, .fini = teardown) {
                      hist_struct.hist[0]);
 }
 
-Test (history_test_suite, print_empty_history, .init=setup, .fini=teardown) {
+Test(history_test_suite, print_empty_history, .init = setup, .fini = teardown) {
     history_t hist_struct = (history_t){0};
     gen_hist_path();
 
@@ -246,10 +246,12 @@ Test (history_test_suite, print_empty_history, .init=setup, .fini=teardown) {
 
     print_history(&hist_struct);
 
-    cr_assert_str_empty(buf, "Something was printed to STDOUT while history was empty: %s", buf);
+    cr_assert_str_empty(
+        buf, "Something was printed to STDOUT while history was empty: %s",
+        buf);
 }
 
-Test (history_test_suite, print_history, .init=setup, .fini=teardown) {
+Test(history_test_suite, print_history, .init = setup, .fini = teardown) {
     history_t hist_struct = (history_t){0};
     gen_hist_path();
 
@@ -272,5 +274,8 @@ Test (history_test_suite, print_history, .init=setup, .fini=teardown) {
         strcat(expected, str);
     }
 
-    cr_assert_str_eq(buf, expected, "Outpout to STDOUT was not equal to expected output.\nExpected: %s\nGot: %s", expected, buf);
+    cr_assert_str_eq(buf, expected,
+                     "Outpout to STDOUT was not equal to expected "
+                     "output.\nExpected: %s\nGot: %s",
+                     expected, buf);
 }
