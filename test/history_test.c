@@ -1,6 +1,6 @@
-#include <errno.h>
 #include <criterion/criterion.h>
 #include <criterion/internal/assert.h>
+#include <errno.h>
 #include <limits.h>
 #include <linux/limits.h>
 #include <stdio.h>
@@ -10,7 +10,7 @@
 
 // Just for the LSP
 #ifndef TESTING
-    #define TESTING
+#define TESTING
 #endif
 #include "../src/history.h"
 
@@ -18,7 +18,8 @@ static _Thread_local char hist_path[PATH_MAX];
 
 void gen_hist_path() {
     char tmpl[PATH_MAX];
-    snprintf(tmpl, sizeof(tmpl), "%s/.snowshell_history_XXXXXX", getenv("HOME"));
+    snprintf(tmpl, sizeof(tmpl), "%s/.snowshell_history_XXXXXX",
+             getenv("HOME"));
 
     int fd = mkstemp(tmpl);
     if (fd == -1) {
@@ -29,7 +30,7 @@ void gen_hist_path() {
     strncpy(hist_path, tmpl, sizeof hist_path);
     hist_path[sizeof hist_path - 1] = '\0';
 
-    close(fd); 
+    close(fd);
 }
 
 void setup(void) {
@@ -48,30 +49,31 @@ void full_history_file_setup(void) {
     gen_hist_path();
 
     FILE *fptr;
-    fptr = fopen(hist_path, "w");    
+    fptr = fopen(hist_path, "w");
 
-    //Dummy history
+    // Dummy history
     for (int i = 0; i < 5; i++)
         fprintf(fptr, "Command: %d\n", i);
 
     fclose(fptr);
 }
 
-void teardown(void) {
-    remove(hist_path);
-}
+void teardown(void) { remove(hist_path); }
 
-Test (history_test_suite, get_hist_file_readptr_when_not_existing, .init=setup, .fini=teardown) {
+Test(history_test_suite, get_hist_file_readptr_when_not_existing, .init = setup,
+     .fini = teardown) {
     gen_hist_path();
 
     FILE *fptr = get_hist_file_readptr(hist_path);
 
     cr_assert_not_null(fptr, "Returned file pointer was null.");
-    cr_assert_eq(access(hist_path, F_OK), 0, "Couldn't find %s", hist_path); // Make sure file was created
+    cr_assert_eq(access(hist_path, F_OK), 0, "Couldn't find %s",
+                 hist_path); // Make sure file was created
     fclose(fptr);
 }
 
-Test (history_test_suite, get_hist_file_readptr_when_existing, .init=setup, .fini=teardown) {
+Test(history_test_suite, get_hist_file_readptr_when_existing, .init = setup,
+     .fini = teardown) {
     gen_hist_path();
 
     // Create file
@@ -85,8 +87,9 @@ Test (history_test_suite, get_hist_file_readptr_when_existing, .init=setup, .fin
     fclose(fptr);
 }
 
-Test(history_test_suite, get_command_history_working, .init=full_history_file_setup, .fini=teardown) {
-    history_t dest_hist = (history_t) {0};
+Test(history_test_suite, get_command_history_working,
+     .init = full_history_file_setup, .fini = teardown) {
+    history_t dest_hist = (history_t){0};
 
     get_commands_history(&dest_hist, hist_path);
 
@@ -94,24 +97,36 @@ Test(history_test_suite, get_command_history_working, .init=full_history_file_se
         char expected[25];
         snprintf(expected, 25, "Command: %d", i);
 
-        cr_assert_str_eq(dest_hist.hist[i], expected, "Command history doesn't match.\nExpected: %s\nGot: %s\nFrom hist_file: %s", expected, dest_hist.hist[i], hist_path);
+        cr_assert_str_eq(dest_hist.hist[i], expected,
+                         "Command history doesn't match.\nExpected: %s\nGot: "
+                         "%s\nFrom hist_file: %s",
+                         expected, dest_hist.hist[i], hist_path);
     }
 
-    cr_assert_eq(dest_hist.length, 5, "History length doesn't match.\nExpected: %d\nGot: %d", 5, dest_hist.length);
+    cr_assert_eq(dest_hist.length, 5,
+                 "History length doesn't match.\nExpected: %d\nGot: %d", 5,
+                 dest_hist.length);
 }
 
-Test(history_test_suite, get_command_history_from_empty_history_file, .init=setup, .fini=teardown) {
-    history_t dest_hist = (history_t) {0};
+Test(history_test_suite, get_command_history_from_empty_history_file,
+     .init = setup, .fini = teardown) {
+    history_t dest_hist = (history_t){0};
     gen_hist_path();
 
     get_commands_history(&dest_hist, hist_path);
 
-    cr_assert_str_empty(dest_hist.hist[0], "First string of history is not empty when it is supposed to be.\nGot: %s from file: %s", dest_hist.hist[0], hist_path);
-    cr_assert_eq(dest_hist.length, 0, "History length doesn't match.\nExpected: %d\nGot: %d", 0, dest_hist.length);
+    cr_assert_str_empty(dest_hist.hist[0],
+                        "First string of history is not empty when it is "
+                        "supposed to be.\nGot: %s from file: %s",
+                        dest_hist.hist[0], hist_path);
+    cr_assert_eq(dest_hist.length, 0,
+                 "History length doesn't match.\nExpected: %d\nGot: %d", 0,
+                 dest_hist.length);
 }
 
-Test(history_test_suite, write_empty_history_to_file, .init=setup, .fini=teardown) {
-    history_t hist_struct = (history_t) {0};
+Test(history_test_suite, write_empty_history_to_file, .init = setup,
+     .fini = teardown) {
+    history_t hist_struct = (history_t){0};
     gen_hist_path();
 
     write_hist(&hist_struct, hist_path);
@@ -123,15 +138,19 @@ Test(history_test_suite, write_empty_history_to_file, .init=setup, .fini=teardow
 
     fgets(file_first_line, 10, fptr);
 
-    cr_assert_str_empty(file_first_line, "First line of history file was not empty when it was supposed to.\nGot: %s", file_first_line);
+    cr_assert_str_empty(file_first_line,
+                        "First line of history file was not empty when it was "
+                        "supposed to.\nGot: %s",
+                        file_first_line);
 
     fclose(fptr);
 }
 
-Test(history_test_suite, write_full_history_to_file, .init=setup, .fini=teardown) {
+Test(history_test_suite, write_full_history_to_file, .init = setup,
+     .fini = teardown) {
     int str_length = MAX_INPUT;
-    
-    history_t hist_struct = (history_t) {0};
+
+    history_t hist_struct = (history_t){0};
     gen_hist_path();
 
     for (int i = 0; i < MAX_HIST_SIZE; i++) {
@@ -149,19 +168,24 @@ Test(history_test_suite, write_full_history_to_file, .init=setup, .fini=teardown
     fptr = fopen(hist_path, "r");
 
     for (int i = 0; fgets(file_line, str_length, fptr); i++) {
-        size_t len = strcspn(file_line, "\r\n");  // strip \n and optional \r
+        size_t len = strcspn(file_line, "\r\n"); // strip \n and optional \r
         file_line[len] = '\0';
 
-        cr_assert_str_eq(hist_struct.hist[i], file_line, "Element inside history struct isn't equal to element inside history file.\nExpected: %s\nGot: %s\nFrom hist file: %s", hist_struct.hist[i], file_line, hist_path);
+        cr_assert_str_eq(
+            hist_struct.hist[i], file_line,
+            "Element inside history struct isn't equal to element inside "
+            "history file.\nExpected: %s\nGot: %s\nFrom hist file: %s",
+            hist_struct.hist[i], file_line, hist_path);
     }
 
     fclose(fptr);
 }
 
-Test(history_test_suite, push_to_not_full_hist, .init=setup, .fini=teardown) {
+Test(history_test_suite, push_to_not_full_hist, .init = setup,
+     .fini = teardown) {
     int str_length = MAX_INPUT;
-    
-    history_t hist_struct = (history_t) {0};
+
+    history_t hist_struct = (history_t){0};
     gen_hist_path();
 
     for (int i = 0; i < 100; i++) {
@@ -178,13 +202,16 @@ Test(history_test_suite, push_to_not_full_hist, .init=setup, .fini=teardown) {
     push_to_hist(&hist_struct, expected);
 
     char *received = hist_struct.hist[hist_struct.length - 1];
-    cr_assert_str_eq(received, expected, "Last stored input was not equal to the last input\nExpected: %s\nGot: %s", expected, received);
+    cr_assert_str_eq(received, expected,
+                     "Last stored input was not equal to the last "
+                     "input\nExpected: %s\nGot: %s",
+                     expected, received);
 }
 
-Test(history_test_suite, push_to_full_hist, .init=setup, .fini=teardown) {
+Test(history_test_suite, push_to_full_hist, .init = setup, .fini = teardown) {
     int str_length = MAX_INPUT;
-    
-    history_t hist_struct = (history_t) {0};
+
+    history_t hist_struct = (history_t){0};
     gen_hist_path();
 
     for (int i = 0; i < MAX_HIST_SIZE; i++) {
@@ -200,6 +227,12 @@ Test(history_test_suite, push_to_full_hist, .init=setup, .fini=teardown) {
     push_to_hist(&hist_struct, expected);
 
     char *received = hist_struct.hist[hist_struct.length - 1];
-    cr_assert_str_eq(received, expected, "Last stored input was not equal to the last input\nExpected: %s\nGot: %s", expected, received);
-    cr_assert_str_eq("Command: 1", hist_struct.hist[0], "Commands where not or where badly shifted.\nExpected first command: Command 1\nGot: %s", hist_struct.hist[0]);
+    cr_assert_str_eq(received, expected,
+                     "Last stored input was not equal to the last "
+                     "input\nExpected: %s\nGot: %s",
+                     expected, received);
+    cr_assert_str_eq("Command: 1", hist_struct.hist[0],
+                     "Commands where not or where badly shifted.\nExpected "
+                     "first command: Command 1\nGot: %s",
+                     hist_struct.hist[0]);
 }
