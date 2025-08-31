@@ -236,3 +236,41 @@ Test(history_test_suite, push_to_full_hist, .init = setup, .fini = teardown) {
                      "first command: Command 1\nGot: %s",
                      hist_struct.hist[0]);
 }
+
+Test (history_test_suite, print_empty_history, .init=setup, .fini=teardown) {
+    history_t hist_struct = (history_t){0};
+    gen_hist_path();
+
+    char buf[100];
+    setbuf(stdout, buf);
+
+    print_history(&hist_struct);
+
+    cr_assert_str_empty(buf, "Something was printed to STDOUT while history was empty: %s", buf);
+}
+
+Test (history_test_suite, print_history, .init=setup, .fini=teardown) {
+    history_t hist_struct = (history_t){0};
+    gen_hist_path();
+
+    for (int i = 0; i < 5; i++) {
+        char str[30];
+        snprintf(str, 30, "Command: %d", i);
+        memcpy(hist_struct.hist[i], str, 30);
+        hist_struct.length++;
+    }
+
+    char buf[500];
+    setbuf(stdout, buf);
+
+    print_history(&hist_struct);
+
+    char expected[500];
+    for (int i = 0; i < 5; i++) {
+        char str[30];
+        snprintf(str, 30, "%d Command: %d\n", i + 1, i);
+        strcat(expected, str);
+    }
+
+    cr_assert_str_eq(buf, expected, "Outpout to STDOUT was not equal to expected output.\nExpected: %s\nGot: %s", expected, buf);
+}
