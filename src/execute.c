@@ -105,14 +105,14 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes,
         }
     }
     char *token = strtok(input, "|");
-    pid_t pids[nb_of_pipes];
     int nb_of_programs = nb_of_pipes + 1;
+    pid_t pids[nb_of_programs];
 
     for (int i = 0; i < nb_of_programs; i++, token = strtok(NULL, "|")) {
-        pids[i] = fork();
         wordexp_t p;
         if (wordexp(token, &p, WRDE_NOCMD) != 0)
             return;
+        pids[i] = fork();
 
         if (pids[i] < 0)
             perror("fork");
@@ -132,7 +132,7 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes,
                 close(pipefd[j][1]);
             }
 
-            if (contains_builtins(&p) == 0)
+            if (contains_builtins(&p) == 1)
                 execute_builtin(&p, current_dir, history);
             else {
                 p.we_wordv[p.we_wordc] = NULL; // Terminate with NULL for execvp
@@ -144,7 +144,7 @@ void piped_parse_and_execute(char *input, char *current_dir, int nb_of_pipes,
         wordfree(&p);
     }
 
-    for (int i = 0; i < nb_of_programs - 1; i++) {
+    for (int i = 0; i < nb_of_pipes; i++) {
         close(pipefd[i][0]);
         close(pipefd[i][1]);
     }

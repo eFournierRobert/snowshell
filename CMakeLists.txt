@@ -11,7 +11,8 @@ add_executable(snowshell ${SRC_FILES})
 add_subdirectory(doc)
 
 target_include_directories(snowshell PRIVATE src)
-target_compile_options(snowshell PRIVATE -Wall -Wextra -Werror -g)
+target_compile_options(snowshell PRIVATE -Wall -Wextra -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined)
+target_link_options(snowshell PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
 
 add_custom_target(run 
   COMMAND snowshell
