@@ -22,16 +22,20 @@ typedef struct history {
 /**
  * @brief Takes in a pointer to a history_t struct and stores inside the
  *        commands history from the file .snowshell_history and the length of
- * it.
+ *        it.
  *
  * @param history The history_t where to store the data.
+ * @param hist_file_path Absolute file path to history file. Can be set to 
+ *                       NULL to get default $HOME/.snowshell_history.
  */
 void get_commands_history(history_t *history, char *hist_file_path);
 
 /**
- * @brief Writes the content of the history struct to ~/.snowshell_history.
+ * @brief Writes the content of the history struct to the history file.
  *
  * @param history The history_t struct that needs to be stored.
+ * @param hist_file_path Absolute file path to history file. Can be set to 
+ *                       NULL to get default $HOME/.snowshell_history.
  *
  * @warning This functions deletes ~/.snowshell_history and rewrites in
  * completely.
