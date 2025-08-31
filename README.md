@@ -56,6 +56,12 @@ SMALL AND SIMPLE SHELL MADE IN C. JUST SOMETHING I MADE FOR FUN AND
 TO LEARN MORE ABOUT THE LANGUAGE.
 ```
 
+## Running tests
+If you want to run the unit tests, you can do this:
+```bash
+cd build && cmake --build . && ctest --output-on-failure
+```
+
 ## Future improvements
 I think the shell is pretty much where I'd like it to be, but here's some 
 ideas that could be worked on:
